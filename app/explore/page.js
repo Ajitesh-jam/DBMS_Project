@@ -1,40 +1,47 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Search } from "lucide-react"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
+import Image from "next/image";
 
 export default function Explore() {
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     // Simulate fetching data
     const fetchPosts = async () => {
-      setLoading(true)
+      setLoading(true);
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Generate 20 random posts
       const generatedPosts = Array.from({ length: 20 }, (_, i) => ({
         id: i + 1,
-        image: `/placeholder.svg?height=${300 + Math.floor(Math.random() * 200)}&width=${300 + Math.floor(Math.random() * 200)}`,
+        image: `/placeholder.svg?height=${
+          300 + Math.floor(Math.random() * 200)
+        }&width=${300 + Math.floor(Math.random() * 200)}`,
         likes: Math.floor(Math.random() * 1000),
         comments: Math.floor(Math.random() * 50),
-        tags: ["nature", "travel", "photography", "food", "fashion", "art"].sort(() => 0.5 - Math.random()).slice(0, 3),
-      }))
+        tags: ["nature", "travel", "photography", "food", "fashion", "art"]
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3),
+      }));
 
-      setPosts(generatedPosts)
-      setLoading(false)
-    }
+      setPosts(generatedPosts);
+      setLoading(false);
+    };
 
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const filteredPosts = posts.filter((post) =>
-    post.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
-  )
+    post.tags.some((tag) =>
+      tag.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -80,7 +87,7 @@ export default function Explore() {
               transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{ scale: 1.03 }}
             >
-              <img
+              <Image
                 src={post.image || "/placeholder.svg"}
                 alt={`Post ${post.id}`}
                 className="w-full h-full object-cover"
@@ -96,7 +103,10 @@ export default function Explore() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map((tag) => (
-                    <span key={tag} className="text-xs bg-white bg-opacity-20 text-white px-2 py-1 rounded">
+                    <span
+                      key={tag}
+                      className="text-xs bg-white bg-opacity-20 text-white px-2 py-1 rounded"
+                    >
                       #{tag}
                     </span>
                   ))}
@@ -107,6 +117,5 @@ export default function Explore() {
         </div>
       )}
     </div>
-  )
+  );
 }
-

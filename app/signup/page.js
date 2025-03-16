@@ -1,37 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { useAuth } from "@/context/AuthContext"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Signup() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
-  const { signup, loading } = useAuth()
-  const router = useRouter()
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const { signup, loading } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (password !== confirmPassword) {
-      return setError("Passwords do not match")
+      return setError("Passwords do not match");
     }
 
     try {
-      const success = await signup(name, email, password)
+      const success = await signup(name, email, password);
       if (success) {
-        router.push("/")
+        router.push("/");
       }
     } catch (err) {
-      setError("Failed to create an account.")
+      setError("Failed to create an account. ", err);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -159,13 +159,15 @@ export default function Signup() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-pink-600 hover:text-pink-500">
+            <Link
+              href="/login"
+              className="font-medium text-pink-600 hover:text-pink-500"
+            >
               Sign in
             </Link>
           </p>
         </div>
       </motion.div>
     </div>
-  )
+  );
 }
-

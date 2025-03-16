@@ -29,7 +29,7 @@ export default function Navbar() {
             <Link href="/" className="flex-shrink-0 flex items-center">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-violet-500 text-transparent bg-clip-text">
-                  Snapgram
+                  MALAV
                 </span>
               </motion.div>
             </Link>

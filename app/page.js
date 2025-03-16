@@ -60,7 +60,7 @@ const posts = [
       name: "David Brown",
       avatar: "/placeholder.svg?height=40&width=40",
     },
-    image: "/ema.png",
+    image: "/placeholder.svg?height=600&width=800",
     likes: 189,
     caption:
       "Just got my new camera! Can't wait to capture some amazing shots 📸 #photography #newgear #excited",

@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { useAuth } from "@/context/AuthContext"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const { login, loading } = useAuth()
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login, loading } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     try {
-      const success = await login(email, password)
+      const success = await login(email, password);
       if (success) {
-        router.push("/")
+        router.push("/");
       }
     } catch (err) {
-      setError("Failed to login. Please check your credentials.")
+      setError("Failed to login. Please check your credentials.", err);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -108,13 +108,19 @@ export default function Login() {
                 type="checkbox"
                 className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+              >
                 Remember me
               </label>
             </div>
 
             <div className="text-sm">
-              <Link href="/forgot-password" className="font-medium text-pink-600 hover:text-pink-500">
+              <Link
+                href="/forgot-password"
+                className="font-medium text-pink-600 hover:text-pink-500"
+              >
                 Forgot your password?
               </Link>
             </div>
@@ -133,14 +139,16 @@ export default function Login() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{" "}
-            <Link href="/signup" className="font-medium text-pink-600 hover:text-pink-500">
+            Don`t have an account?
+            <Link
+              href="/signup"
+              className="font-medium text-pink-600 hover:text-pink-500"
+            >
               Sign up
             </Link>
           </p>
         </div>
       </motion.div>
     </div>
-  )
+  );
 }
-
