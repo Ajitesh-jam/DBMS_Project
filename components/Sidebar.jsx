@@ -38,7 +38,7 @@ export default function Sidebar() {
   ]
 
   return (
-    <>
+    <div style={{ border: "1px solid cyan", borderRadius: "8px" }}>
       <motion.button
         className="fixed left-4 top-20 z-40 md:hidden bg-white dark:bg-gray-900 p-2 rounded-full shadow-lg"
         onClick={() => setIsOpen(true)}
@@ -123,7 +123,7 @@ export default function Sidebar() {
           </ul>
         </nav>
       </motion.aside>
-    </>
+    </div>
   )
 }
 

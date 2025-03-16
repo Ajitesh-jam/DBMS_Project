@@ -18,10 +18,11 @@ export default function PostCard({ post }) {
   const handleLike = () => {
     if (liked) {
       setLikes(likes - 1)
+      
     } else {
       setLikes(likes + 1)
       controls.start({
-        scale: [1, 1.2, 1],
+        scale: [1, 12, 1],
         transition: { duration: 0.3 },
       })
     }
@@ -39,12 +40,13 @@ export default function PostCard({ post }) {
   return (
     <motion.div
       ref={cardRef}
-      className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden"
+      className="bg-white dark:bg-red-900 rounded-lg shadow-md overflow-hidden"
       whileHover={{
         y: -10,
-        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        boxShadow: "0 20px 25px -5px rgba(47, 30, 201, 0.1), 0 10px 10px -5px rgba(15, 27, 158, 0.04)",
       }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
+      style={{color:'black'}}
     >
       <div className="p-4 flex items-center">
         <Image
@@ -55,7 +57,7 @@ export default function PostCard({ post }) {
           className="rounded-full"
         />
         <div className="ml-3">
-          <Link href={`/profile/${post.user.name}`} className="font-medium hover:underline">
+          <Link href={`/profile/${post.user.name}`} className="font-medium hover:underline ">
             {post.user.name}
           </Link>
         </div>
