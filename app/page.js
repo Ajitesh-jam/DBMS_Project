@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import HeroSlider from "@/components/HeroSlider";
 import PostCard from "@/components/PostCard";
+import HeroGeometric from "@/components/Geometry";
 
 const posts = [
   {
@@ -83,11 +84,23 @@ export default function Home() {
     }
   }, [controls, inView]);
 
+  useEffect(() => {
+    fetch(
+      "/api/getNodeByLabel?label=PLAYER&where=" +
+        encodeURIComponent(
+          JSON.stringify({ name: "Tobias Harris" }, { weight: 100 })
+        )
+    )
+      .then((response) => response.json())
+      .then((data) => console.log(data))
+      .catch((error) => console.error("Error:", error));
+  }, []);
+
   return (
     <div className="w-full">
-      <HeroSlider />
+      <HeroSlider></HeroSlider>
 
-      <section className="max-w-4xl mx-auto px-4 py-12">
+      <section className="max-w-4xl mx-auto px-4 py-12 ">
         <motion.h2
           className="text-3xl font-bold text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
