@@ -18,6 +18,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FloatingIcons from "@/components/floating-icons";
 
+import useUsers from "@/hooks/user.zustand";
+import bcrypt from "bcryptjs";
+
 export default function LoginPage() {
   const router = useRouter();
   const [loginMethod, setLoginMethod] = useState("username");
@@ -30,6 +33,8 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  const setNewUser = useUsers((state) => state.setNewUser);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,19 +85,58 @@ export default function LoginPage() {
         loginData.phone = formData.phone;
       }
 
-      // Simulate API call
       console.log("Sending login data:", loginData);
 
-      // Simulate successful login
+      // Call the API to fetch user data
+      const response = await fetch("/api/getNodeByLabel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          label: "USER",
+          where:
+            loginMethod === "username"
+              ? [{ name: formData.username }]
+              : loginMethod === "email"
+              ? [{ email: formData.email }]
+              : [{ phone: formData.phone }],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.length === 0) {
+        throw new Error("Invalid credentials. Please try again.");
+      }
+
+      const user = data[0].n.properties;
+
+      // Check if password is correct using bcrypt
+      const isPasswordValid = await bcrypt.compare(
+        formData.password,
+        user.password
+      );
+
+      if (!isPasswordValid) {
+        throw new Error("Invalid credentials. Please try again.");
+      }
+
+      // Set user data to Zustand
+      setNewUser(user);
+      setIsSuccess(true);
+
+      // Redirect to profile after success
       setTimeout(() => {
-        setIsSuccess(true);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1500);
+        router.push("/profile");
       }, 1500);
     } catch (error) {
       console.error("Login error:", error);
-      setError("Invalid credentials. Please try again.");
+      setError(error.message || "Invalid credentials. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
