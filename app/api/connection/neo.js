@@ -220,6 +220,94 @@ export const createNode = async (labels, properties) => {
   return await runQuery(query, properties);
 };
 
+export const createEdge = async (
+  startNodeLabel,
+  startNodeWhere,
+  endNodeLabel,
+  endNodeWhere,
+  edgeLabel,
+  properties
+) => {
+  // Convert labels into a string format
+  const startLabelString = startNodeLabel.join(":");
+  const endLabelString = endNodeLabel.join(":");
+
+  // Convert properties into a Cypher-compatible key-value string
+  const propsString = Object.entries(properties)
+    .map(([key, value]) => {
+      if (typeof value === "string") return `${key}: "${value}"`;
+      if (typeof value === "number" || typeof value === "boolean")
+        return `${key}: ${value}`;
+      return "";
+    })
+    .filter(Boolean) // Removes any empty values
+    .join(", ");
+
+  // Construct the final query
+  const query = `MATCH (n:${startLabelString}) WHERE ${Object.entries(
+    startNodeWhere
+  )
+    .map(([k, v]) => `n.${k} = $${k}`)
+    .join(" AND ")}
+    MATCH (m:${endLabelString}) WHERE ${Object.entries(endNodeWhere)
+      .map(([k, v]) => `m.${k} = $${k}`)
+      .join(" AND ")}
+    CREATE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
+    RETURN e`;
+  console.log("Final Cypher Query:", query);
+  console.log("Properties:", properties);
+  console.log("Start Node Where:", startNodeWhere);
+  console.log("End Node Where:", endNodeWhere);
+  return await runQuery(query, {
+    ...startNodeWhere,
+    ...endNodeWhere,
+    ...properties,
+  });
+};
+
+export const createAdjacentNode = async (
+  startNodeLabel,
+  startNodeWhere,
+  endNodeLabel,
+  endNodeWhere,
+  edgeLabel,
+  properties
+) => {
+  // Convert labels into a string format
+  const startLabelString = startNodeLabel.join(":");
+  const endLabelString = endNodeLabel.join(":");
+  // Convert properties into a Cypher-compatible key-value string
+  const propsString = Object.entries(properties)
+    .map(([key, value]) => {
+      if (typeof value === "string") return `${key}: "${value}"`;
+      if (typeof value === "number" || typeof value === "boolean")
+        return `${key}: ${value}`;
+      return "";
+    })
+    .filter(Boolean) // Removes any empty values
+    .join(", ");
+  // Construct the final query
+  const query = `MATCH (n:${startLabelString}) WHERE ${Object.entries(
+    startNodeWhere
+  )
+    .map(([k, v]) => `n.${k} = $${k}`)
+    .join(" AND ")}
+    MATCH (m:${endLabelString}) WHERE ${Object.entries(endNodeWhere)
+      .map(([k, v]) => `m.${k} = $${k}`)
+      .join(" AND ")}
+    CREATE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
+    RETURN e`;
+  console.log("Final Cypher Query:", query);
+  console.log("Properties:", properties);
+  console.log("Start Node Where:", startNodeWhere);
+  console.log("End Node Where:", endNodeWhere);
+  return await runQuery(query, {
+    ...startNodeWhere,
+    ...endNodeWhere,
+    ...properties,
+  });
+};
+
 export const deleteNode = async (label, where) => {
   let query = `MATCH (n:${label})`;
   if (Object.keys(where).length > 0) {
@@ -232,6 +320,46 @@ export const deleteNode = async (label, where) => {
   query += " DETACH DELETE n";
   return await runQuery(query, where);
 };
+
+export const deleteEdge = async (startNodeLabel, startNodeWhere, endNodeLabel, endNodeWhere, edgeLabel) => {
+  let query = `MATCH (n:${startNodeLabel})-[e:${edgeLabel}]->(m:${endNodeLabel})`;
+  if (Object.keys(startNodeWhere).length > 0) {
+    query +=
+      ` WHERE ` +
+      Object.entries(startNodeWhere)
+        .map(([k, v]) => `n.${k} = $${k}`)
+        .join(" AND ");
+  }
+  if (Object.keys(endNodeWhere).length > 0) {
+    query +=
+      ` AND ` +
+      Object.entries(endNodeWhere)
+        .map(([k, v]) => `m.${k} = $${k}`)
+        .join(" AND ");
+  }
+  query += " DELETE e";
+  return await runQuery(query, { ...startNodeWhere, ...endNodeWhere });
+}
+
+export const deleteAdjacentNode = async (startNodeLabel, startNodeWhere, endNodeLabel, endNodeWhere, edgeLabel) => {
+  let query = `MATCH (n:${startNodeLabel})-[e:${edgeLabel}]->(m:${endNodeLabel})`;
+  if (Object.keys(startNodeWhere).length > 0) {
+    query +=
+      ` WHERE ` +
+      Object.entries(startNodeWhere)
+        .map(([k, v]) => `n.${k} = $${k}`)
+        .join(" AND ");
+  }
+  if (Object.keys(endNodeWhere).length > 0) {
+    query +=
+      ` AND ` +
+      Object.entries(endNodeWhere)
+        .map(([k, v]) => `m.${k} = $${k}`)
+        .join(" AND ");
+  }
+  query += " DELETE e";
+  return await runQuery(query, { ...startNodeWhere, ...endNodeWhere });
+}
 
 export const updateNode = async (label, where, updates) => {
   // Convert `where` conditions to Cypher
@@ -252,6 +380,54 @@ export const updateNode = async (label, where, updates) => {
 
   // Construct query
   const query = `MATCH (n:${label}) WHERE ${whereString} SET ${updatesString} RETURN n;`;
+  console.log("Final Cypher Query:", query);
+
+  return await runQuery(query);
+};
+
+export const updateEdge = async (startNodeLabel, startNodeWhere, endNodeLabel, endNodeWhere, edgeLabel, updates) => {
+  // Convert `where` conditions to Cypher
+  const whereString = Object.entries(startNodeWhere)
+    .map(
+      ([key, value]) =>
+        `n.${key} = ${typeof value === "string" ? `"${value}"` : value}`
+    )
+    .join(" AND ");
+
+  // Convert `updates` properties to a Cypher `SET` clause
+  const updatesString = Object.entries(updates)
+    .map(
+      ([key, value]) =>
+        `e.${key} = ${typeof value === "string" ? `"${value}"` : value}`
+    )
+    .join(", ");
+
+  // Construct query
+  const query = `MATCH (n:${startNodeLabel})-[e:${edgeLabel}]->(m:${endNodeLabel}) WHERE ${whereString} SET ${updatesString} RETURN e;`;
+  console.log("Final Cypher Query:", query);
+
+  return await runQuery(query);
+};
+
+export const updateAdjacentNode = async (startNodeLabel, startNodeWhere, endNodeLabel, endNodeWhere, edgeLabel, updates) => {
+  // Convert `where` conditions to Cypher
+  const whereString = Object.entries(startNodeWhere)
+    .map(
+      ([key, value]) =>
+        `n.${key} = ${typeof value === "string" ? `"${value}"` : value}`
+    )
+    .join(" AND ");
+
+  // Convert `updates` properties to a Cypher `SET` clause
+  const updatesString = Object.entries(updates)
+    .map(
+      ([key, value]) =>
+        `e.${key} = ${typeof value === "string" ? `"${value}"` : value}`
+    )
+    .join(", ");
+
+  // Construct query
+  const query = `MATCH (n:${startNodeLabel})-[e:${edgeLabel}]->(m:${endNodeLabel}) WHERE ${whereString} SET ${updatesString} RETURN e;`;
   console.log("Final Cypher Query:", query);
 
   return await runQuery(query);
