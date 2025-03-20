@@ -1,172 +1,597 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
+import bcrypt from "bcryptjs";
+import { useRouter } from "next/navigation";
+import {
+  Check,
+  X,
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Upload,
+  Sparkles,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import FloatingIcons from "@/components/floating-icons";
 
-export default function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const { signup, loading } = useAuth();
+export default function SignupPage() {
   const router = useRouter();
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    email: "",
+    imageUrl: "",
+    bio: "",
+    DOB: "",
+    gender: "",
+  });
+
+  const [errors, setErrors] = useState({
+    username: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    email: "",
+    imageUrl: "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { ...errors };
+
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+      valid = false;
+    } else {
+      newErrors.username = "";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+      valid = false;
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+      valid = false;
+    } else if (!/\d/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one number";
+      valid = false;
+    } else {
+      newErrors.password = "";
+    }
+
+    // Confirm password validation
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+      valid = false;
+    } else {
+      newErrors.confirmPassword = "";
+    }
+
+    // Phone validation
+    if (!formData.phone) {
+      newErrors.phone = "Phone number is required";
+      valid = false;
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      newErrors.phone = "Phone must be a 10-digit number";
+      valid = false;
+    } else {
+      newErrors.phone = "";
+    }
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+      valid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+      valid = false;
+    } else {
+      newErrors.email = "";
+    }
+
+    // Image URL validation
+    if (!formData.imageUrl) {
+      newErrors.imageUrl = "Profile image is required";
+      valid = false;
+    } else {
+      newErrors.imageUrl = "";
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageUpload = (e) => {
+    // In a real app, this would upload to a storage service
+    // For this example, we'll just set the URL directly
+    // const file = e.target.files[0];
+    // if (file) {
+    //   // Simulate upload and getting a URL back
+    //   setTimeout(() => {
+    //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
+    //     setFormData((prev) => ({
+    //       ...prev,
+    //       imageUrl: fakeUrl,
+    //     }));
+    //   }, 1000);
+    // }
+    //set;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
-    if (password !== confirmPassword) {
-      return setError("Passwords do not match");
-    }
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
 
     try {
-      const success = await signup(name, email, password);
-      if (success) {
-        router.push("/");
-      }
-    } catch (err) {
-      setError("Failed to create an account. ", err);
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(formData.password, 10);
+
+      // Prepare data for API call
+      const userData = {
+        name: formData.username,
+        password: hashedPassword, // Send hashed password
+        phone: formData.phone,
+        email: formData.email,
+        imageUrl: formData.imageUrl,
+        //friendRequests: 0,  -> make edge instead
+        //likedPosts: 0,  -> make edge instead
+      };
+
+      // Simulate API call
+      console.log("Sending data to API:", userData);
+
+      fetch("/api/createNode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          label: ["USER"],
+          properties: userData,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json(); // Parse JSON correctly
+        })
+        .then((data) => console.log(data))
+        .catch((error) => console.error("Error:", error));
+
+      // Simulate successful response
+      setTimeout(() => {
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      }, 1500);
+    } catch (error) {
+      console.error("Error during signup:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center ">
+      <FloatingIcons />
+
       <motion.div
-        className="max-w-md w-full space-y-8 bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg"
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <div>
-          <motion.h2
-            className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            Create your account
-          </motion.h2>
-        </div>
-
-        {error && (
-          <motion.div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {error}
-          </motion.div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+        <Card className="border-2 shadow-lg backdrop-blur-sm bg-background/80">
+          <CardHeader>
             <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <label htmlFor="name" className="sr-only">
-                Full name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <CardTitle className="text-2xl font-bold text-center">
+                Create Your Account
+              </CardTitle>
+              <CardDescription className="text-center mt-2">
+                Join our community and start sharing
+              </CardDescription>
             </motion.div>
-            <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-            >
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </motion.div>
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-            >
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </motion.div>
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-            >
-              <label htmlFor="confirm-password" className="sr-only">
-                Confirm password
-              </label>
-              <input
-                id="confirm-password"
-                name="confirm-password"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </motion.div>
-          </div>
+          </CardHeader>
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
-            >
-              {loading ? "Creating account..." : "Sign up"}
-            </button>
-          </motion.div>
-        </form>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <motion.div
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="flex items-center gap-2">
+                    <User size={16} />
+                    Username
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="username"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.username ? "border-destructive" : ""
+                      }`}
+                      placeholder="Choose a unique username"
+                    />
+                    {errors.username && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.username}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-pink-600 hover:text-pink-500"
+              <motion.div
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="flex items-center gap-2">
+                    <Lock size={16} />
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.password ? "border-destructive" : ""
+                      }`}
+                      placeholder="Min 8 characters with numbers"
+                    />
+                    {errors.password && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.password}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="confirmPassword"
+                    className="flex items-center gap-2"
+                  >
+                    <Lock size={16} />
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.confirmPassword ? "border-destructive" : ""
+                      }`}
+                      placeholder="Confirm your password"
+                    />
+                    {errors.confirmPassword && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.confirmPassword}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone size={16} />
+                    Phone Number
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.phone ? "border-destructive" : ""
+                      }`}
+                      placeholder="10-digit phone number"
+                    />
+                    {errors.phone && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.phone}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="bio" className="flex items-center gap-2">
+                    <bio size={16} />
+                    bio Number
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="bio"
+                      name="bio"
+                      type="text"
+                      value={formData.bio}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.bio ? "border-destructive" : ""
+                      }`}
+                      placeholder="Describe yourself"
+                    />
+                    {errors.bio && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.bio}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="date" className="flex items-center gap-2">
+                    <date size={16} />
+                    date Number
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="date"
+                      name="date"
+                      type="date"
+                      value={formData.date}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.date ? "border-destructive" : ""
+                      }`}
+                      placeholder="Date of Birth"
+                    />
+                    {errors.date && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.date}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail size={16} />
+                    Email Address
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`pr-10 ${
+                        errors.email ? "border-destructive" : ""
+                      }`}
+                      placeholder="your@email.com"
+                    />
+                    {errors.email && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.email}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+              >
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="imageUpload"
+                    className="flex items-center gap-2"
+                  >
+                    <Upload size={16} />
+                    Profile Image URL
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="imageUrl"
+                      type="url"
+                      name="imageUrl"
+                      // accept="image/*"
+                      //onChange={handleImageUpload}
+                      onChange={handleChange}
+                      value={formData.imageUrl}
+                      placeholder="Upload your image and give its URL"
+                      className={`pr-10 ${
+                        errors.imageUrl ? "border-destructive" : ""
+                      }`}
+                    />
+                    {formData.imageUrl && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-green-500 text-sm mt-1 flex items-center gap-1"
+                      >
+                        <Check size={14} /> Image got successfully
+                      </motion.div>
+                    )}
+                    {errors.imageUrl && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-destructive text-sm mt-1 flex items-center gap-1"
+                      >
+                        <X size={14} /> {errors.imageUrl}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                className="pt-4"
+              >
+                <Button
+                  type="submit"
+                  className="w-full h-11 relative overflow-hidden group"
+                  disabled={isSubmitting || isSuccess}
+                >
+                  <motion.span
+                    animate={isSuccess ? { y: -30 } : { y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {isSubmitting ? "Creating Account..." : "Sign Up"}
+                    {isSubmitting && (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Number.POSITIVE_INFINITY,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                      >
+                        <Sparkles size={16} />
+                      </motion.div>
+                    )}
+                  </motion.span>
+
+                  {isSuccess && (
+                    <motion.span
+                      initial={{ y: 30 }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 flex items-center justify-center text-primary-foreground"
+                    >
+                      <Check className="mr-2" size={16} /> Success!
+                    </motion.span>
+                  )}
+                </Button>
+              </motion.div>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex justify-center">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              className="text-sm text-muted-foreground"
             >
-              Sign in
-            </Link>
-          </p>
-        </div>
+              Already have an account?{" "}
+              <Button
+                variant="link"
+                className="p-0"
+                onClick={() => router.push("/login")}
+              >
+                Log in
+              </Button>
+            </motion.p>
+          </CardFooter>
+        </Card>
       </motion.div>
     </div>
   );

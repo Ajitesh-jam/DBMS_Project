@@ -140,7 +140,6 @@ export const getAdjacentNode = async (
     const nodeConditions = where
       .map((condition) => {
         const [key, value] = Object.entries(condition)[0]; // Extract key-value pair
-        console.log("Node Condition -> KEY:", key, "VALUE:", value);
 
         if (typeof value === "string") return `n.${key} = "${value}"`;
         if (typeof value === "number") return `n.${key} = ${value}`;
@@ -250,7 +249,6 @@ export const updateNode = async (label, where, updates) => {
         `n.${key} = ${typeof value === "string" ? `"${value}"` : value}`
     )
     .join(", ");
-  console.log("updaye string:", updatesString);
 
   // Construct query
   const query = `MATCH (n:${label}) WHERE ${whereString} SET ${updatesString} RETURN n;`;

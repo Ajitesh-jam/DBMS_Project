@@ -1,153 +1,355 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
+import { User, Mail, Phone, Lock, Sparkles, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FloatingIcons from "@/components/floating-icons";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login, loading } = useAuth();
+export default function LoginPage() {
   const router = useRouter();
+  const [loginMethod, setLoginMethod] = useState("username");
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
+    // Validate form
+    if (!formData.password) {
+      setError("Password is required");
+      return;
+    }
+
+    if (loginMethod === "username" && !formData.username) {
+      setError("Username is required");
+      return;
+    }
+
+    if (loginMethod === "email" && !formData.email) {
+      setError("Email is required");
+      return;
+    }
+
+    if (loginMethod === "phone" && !formData.phone) {
+      setError("Phone number is required");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      const success = await login(email, password);
-      if (success) {
-        router.push("/");
+      // Prepare login data based on selected method
+      const loginData = {
+        password: formData.password,
+      };
+
+      if (loginMethod === "username") {
+        loginData.username = formData.username;
+      } else if (loginMethod === "email") {
+        loginData.email = formData.email;
+      } else if (loginMethod === "phone") {
+        loginData.phone = formData.phone;
       }
-    } catch (err) {
-      setError("Failed to login. Please check your credentials.", err);
+
+      // Simulate API call
+      console.log("Sending login data:", loginData);
+
+      // Simulate successful login
+      setTimeout(() => {
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+      }, 1500);
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Invalid credentials. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="login min-h-screen flex items-center justify-center p-4">
+      <FloatingIcons />
+
       <motion.div
-        className="max-w-md w-full space-y-8 bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg"
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <div>
-          <motion.h2
-            className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            Sign in to your account
-          </motion.h2>
-        </div>
-
-        {error && (
-          <motion.div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {error}
-          </motion.div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+        <Card className="border-2 shadow-lg backdrop-blur-sm bg-background/80">
+          <CardHeader>
             <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <CardTitle className="text-2xl font-bold text-center">
+                Welcome Back
+              </CardTitle>
+              <CardDescription className="text-center mt-2">
+                Log in to your account
+              </CardDescription>
             </motion.div>
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-            >
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </motion.div>
-          </div>
+          </CardHeader>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
               >
-                Remember me
-              </label>
-            </div>
+                <Tabs
+                  defaultValue="username"
+                  value={loginMethod}
+                  onValueChange={setLoginMethod}
+                  className="w-full"
+                >
+                  <TabsList className="grid grid-cols-3 mb-6">
+                    <TabsTrigger
+                      value="username"
+                      className="flex items-center gap-1"
+                    >
+                      <User size={14} /> Username
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="email"
+                      className="flex items-center gap-1"
+                    >
+                      <Mail size={14} /> Email
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="phone"
+                      className="flex items-center gap-1"
+                    >
+                      <Phone size={14} /> Phone
+                    </TabsTrigger>
+                  </TabsList>
 
-            <div className="text-sm">
-              <Link
-                href="/forgot-password"
-                className="font-medium text-pink-600 hover:text-pink-500"
+                  <AnimatePresence mode="wait">
+                    {loginMethod === "username" && (
+                      <TabsContent value="username" className="mt-0">
+                        <motion.div
+                          key="username-input" // Unique key for username tab
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: 20, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="space-y-2"
+                        >
+                          <Label
+                            htmlFor="username"
+                            className="flex items-center gap-2"
+                          >
+                            <User size={16} />
+                            Username
+                          </Label>
+                          <Input
+                            id="username"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="Enter your username"
+                          />
+                        </motion.div>
+                      </TabsContent>
+                    )}
+
+                    {loginMethod === "email" && (
+                      <TabsContent value="email" className="mt-0">
+                        <motion.div
+                          key="email-input" // Unique key for email tab
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: 20, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="space-y-2"
+                        >
+                          <Label
+                            htmlFor="email"
+                            className="flex items-center gap-2"
+                          >
+                            <Mail size={16} />
+                            Email Address
+                          </Label>
+                          <Input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Enter your email"
+                          />
+                        </motion.div>
+                      </TabsContent>
+                    )}
+
+                    {loginMethod === "phone" && (
+                      <TabsContent value="phone" className="mt-0">
+                        <motion.div
+                          key="phone-input" // Unique key for phone tab
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: 20, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="space-y-2"
+                        >
+                          <Label
+                            htmlFor="phone"
+                            className="flex items-center gap-2"
+                          >
+                            <Phone size={16} />
+                            Phone Number
+                          </Label>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            placeholder="Enter your phone number"
+                          />
+                        </motion.div>
+                      </TabsContent>
+                    )}
+                  </AnimatePresence>
+                </Tabs>
+              </motion.div>
+
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="space-y-2"
               >
-                Forgot your password?
-              </Link>
-            </div>
-          </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="flex items-center gap-2">
+                    <Lock size={16} />
+                    Password
+                  </Label>
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto text-xs"
+                    onClick={() => router.push("/forgot-password")}
+                  >
+                    Forgot password?
+                  </Button>
+                </div>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                />
+              </motion.div>
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </motion.div>
-        </form>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-destructive text-sm"
+                >
+                  {error}
+                </motion.div>
+              )}
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Don`t have an account?
-            <Link
-              href="/signup"
-              className="font-medium text-pink-600 hover:text-pink-500"
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                <Button
+                  type="submit"
+                  className="w-full h-11 relative overflow-hidden group"
+                  disabled={isSubmitting || isSuccess}
+                >
+                  <motion.span
+                    animate={isSuccess ? { y: -30 } : { y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {isSubmitting ? "Logging in..." : "Log In"}
+                    {isSubmitting && (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Number.POSITIVE_INFINITY,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                      >
+                        <Sparkles size={16} />
+                      </motion.div>
+                    )}
+                  </motion.span>
+
+                  {isSuccess && (
+                    <motion.span
+                      initial={{ y: 30 }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 flex items-center justify-center text-primary-foreground"
+                    >
+                      <Check className="mr-2" size={16} /> Success!
+                    </motion.span>
+                  )}
+                </Button>
+              </motion.div>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex justify-center">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="text-sm text-muted-foreground"
             >
-              Sign up
-            </Link>
-          </p>
-        </div>
+              Don't have an account?{" "}
+              <Button
+                variant="link"
+                className="p-0"
+                onClick={() => router.push("/signup")}
+              >
+                Sign up
+              </Button>
+            </motion.p>
+          </CardFooter>
+        </Card>
       </motion.div>
     </div>
   );
