@@ -1,20 +1,22 @@
 import { getEdgesOfNode } from "../connection/neo";
 import { NextResponse } from "next/server";
 
-export async function GET(req) {
+export async function POST(req) {
   try {
-    const { searchParams } = new URL(req.url);
-    const label = searchParams.get("label");
-    const where = searchParams.get("where");
-    const edgeLabel = searchParams.get("edgeLabel");
-    const edgeWhere = searchParams.get("edgeWhere");
-    console.log("label", label, "edgeLabel", edgeLabel);
+    const { label, where, edgeLabel, edgeWhere } = await req.json();
+
+    console.log("label:", label);
+    console.log("where:", where);
+    console.log("edgeLabel:", edgeLabel);
+    console.log("edgeWhere:", edgeWhere);
+
     const response = await getEdgesOfNode(
       label,
-      where ? JSON.parse(where) : {},
+      where || [],
       edgeLabel,
-      edgeWhere ? JSON.parse(edgeWhere) : {}
+      edgeWhere || []
     );
+
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error fetching edges:", error);
