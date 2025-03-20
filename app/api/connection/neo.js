@@ -53,7 +53,6 @@ export const getNodeByLabel = async (label, where = {}) => {
       .map((condition) => {
         // Extract key-value pair from each object
         const [key, value] = Object.entries(condition)[0]; // Extract the first key-value pair
-        console.log("KEY, VALUE:", key, value);
 
         if (typeof value === "string") return `n.${key} = "${value}"`;
         else if (typeof value === "number") return `n.${key} = ${value}`;
@@ -85,7 +84,6 @@ export const getEdgesOfNode = async (
     const nodeConditions = where
       .map((condition) => {
         const [key, value] = Object.entries(condition)[0]; // Extract key-value pair
-        console.log("Node Condition -> KEY:", key, "VALUE:", value);
 
         if (typeof value === "string") return `n.${key} = "${value}"`;
         if (typeof value === "number") return `n.${key} = ${value}`;
@@ -103,7 +101,6 @@ export const getEdgesOfNode = async (
     const edgeConditions = edgeWhere
       .map((condition) => {
         const [key, value] = Object.entries(condition)[0];
-        console.log("Edge Condition -> KEY:", key, "VALUE:", value);
 
         if (typeof value === "string") return `e.${key} = "${value}"`;
         if (typeof value === "number") return `e.${key} = ${value}`;
@@ -202,35 +199,26 @@ export const getAdjacentNode = async (
   return await runQuery(query);
 };
 
-export const createNode = async (label, properties) => {
-  const props = Object.keys(properties)
-    .map((key) => `${key}: $${key}`)
-    .join(", ");
-  const query = `CREATE (n:${label} { ${props} }) RETURN n`;
-  return await runQuery(query, properties);
-};
+export const createNode = async (labels, properties) => {
+  // Convert labels into a string format
+  const labelString = labels.join(":"); // Example: ["Person", "Employee"] → "Person:Employee"
 
-export const updateNode = async (label, where, updateProps) => {
-  let query = `MATCH (n:${label})`;
-  if (Object.keys(where).length > 0) {
-    query +=
-      ` WHERE ` +
-      Object.entries(where)
-        .map(([k, v]) => `n.${k} = $${k}`)
-        .join(" AND ");
-  }
-  query +=
-    ` SET ` +
-    Object.entries(updateProps)
-      .map(([k, v]) => `n.${k} = $update_${k}`)
-      .join(", ");
-  query += " RETURN n";
-  return await runQuery(query, {
-    ...where,
-    ...Object.fromEntries(
-      Object.entries(updateProps).map(([k, v]) => [`update_${k}`, v])
-    ),
-  });
+  // Convert properties into a Cypher-compatible key-value string
+  const propsString = Object.entries(properties)
+    .map(([key, value]) => {
+      if (typeof value === "string") return `${key}: "${value}"`;
+      if (typeof value === "number" || typeof value === "boolean")
+        return `${key}: ${value}`;
+      return "";
+    })
+    .filter(Boolean) // Removes any empty values
+    .join(", ");
+
+  // Construct the final query
+  const query = `CREATE (n:${labelString} { ${propsString} }) RETURN n`;
+  console.log("Final Cypher Query:", query);
+
+  return await runQuery(query, properties);
 };
 
 export const deleteNode = async (label, where) => {
@@ -244,4 +232,29 @@ export const deleteNode = async (label, where) => {
   }
   query += " DETACH DELETE n";
   return await runQuery(query, where);
+};
+
+export const updateNode = async (label, where, updates) => {
+  // Convert `where` conditions to Cypher
+  const whereString = Object.entries(where)
+    .map(
+      ([key, value]) =>
+        `n.${key} = ${typeof value === "string" ? `"${value}"` : value}`
+    )
+    .join(" AND ");
+
+  // Convert `updates` properties to a Cypher `SET` clause
+  const updatesString = Object.entries(updates)
+    .map(
+      ([key, value]) =>
+        `n.${key} = ${typeof value === "string" ? `"${value}"` : value}`
+    )
+    .join(", ");
+  console.log("updaye string:", updatesString);
+
+  // Construct query
+  const query = `MATCH (n:${label}) WHERE ${whereString} SET ${updatesString} RETURN n;`;
+  console.log("Final Cypher Query:", query);
+
+  return await runQuery(query);
 };
