@@ -6,7 +6,7 @@ export async function POST(req) {
     const body = await req.json(); // Extract JSON body
     const { label, properties } = body;
 
-    console.log("Label and where ; ", label, properties);
+    console.log("Label and where ; \n", label, properties);
     const response = await createNode(label, properties ? properties : {});
     return NextResponse.json(response, { status: 200 });
   } catch (error) {

@@ -6,11 +6,46 @@ export async function POST(req) {
     const body = await req.json(); // Extract JSON body
     const { label, where, updates } = body;
 
-    console.log("Label and where and updates; ", label, where, updates);
+    // Validate input data
+    if (!label || typeof label !== "string") {
+      return NextResponse.json(
+        { error: "Invalid or missing 'label'" },
+        { status: 400 }
+      );
+    }
+
+    if (!where || Object.keys(where).length === 0) {
+      return NextResponse.json(
+        { error: "'where' condition is required to update a node" },
+        { status: 400 }
+      );
+    }
+
+    if (!updates || Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { error: "'updates' properties are required" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Updating Node - Label, Where, Updates: ", label, where, updates);
+
+    // Call updateNode with validated data
     const response = await updateNode(label, where, updates);
-    return NextResponse.json(response, { status: 200 });
+
+    if (response && response.records && response.records.length > 0) {
+      return NextResponse.json(
+        { message: "Node updated successfully", data: response.records[0].get("n") },
+        { status: 200 }
+      );
+    } else {
+      return NextResponse.json(
+        { error: "No matching node found or update failed" },
+        { status: 404 }
+      );
+    }
   } catch (error) {
-    console.error("Error fetching nodes:", error);
+    console.error("Error updating node:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
