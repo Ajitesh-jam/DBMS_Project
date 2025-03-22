@@ -7,9 +7,12 @@ const initialState = {
     name: "Dummy User",
     DOB: "2-34-2224",
     imageUrl:
-      "https://img.myloview.cz/plakaty/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzgh0Pd-fCG2LnUPP92d1DP7y2cdnugqFXyw&s",
     email: "default@gmail.com",
     phone: "0000000000",
+    followers: 0,
+    posts: 0,
+    following: 0,
   },
 };
 

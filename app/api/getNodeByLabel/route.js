@@ -7,6 +7,7 @@ export async function POST(req) {
     const { label, where } = body;
 
     const response = await getNodeByLabel(label, where ? where : {});
+
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error fetching nodes:", error);

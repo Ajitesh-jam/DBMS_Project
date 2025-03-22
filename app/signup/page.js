@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/card";
 import FloatingIcons from "@/components/floating-icons";
 
+import useUsers from "@/hooks/user.zustand";
+
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -37,7 +39,7 @@ export default function SignupPage() {
     email: "",
     imageUrl: "",
     bio: "",
-    DOB: "",
+    dob: "",
     gender: "",
   });
 
@@ -48,10 +50,15 @@ export default function SignupPage() {
     phone: "",
     email: "",
     imageUrl: "",
+    bio: "",
+    dob: "",
+    gender: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const setUser = useUsers((state) => state.setNewUser);
 
   const validateForm = () => {
     let valid = true;
@@ -164,6 +171,9 @@ export default function SignupPage() {
         phone: formData.phone,
         email: formData.email,
         imageUrl: formData.imageUrl,
+        dob: formData.dob,
+        bio: formData.bio,
+
         //friendRequests: 0,  -> make edge instead
         //likedPosts: 0,  -> make edge instead
       };
@@ -177,7 +187,7 @@ export default function SignupPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          label: ["USER"],
+          label: "USER",
           properties: userData,
         }),
       })
@@ -191,10 +201,19 @@ export default function SignupPage() {
         .catch((error) => console.error("Error:", error));
 
       // Simulate successful response
+
       setTimeout(() => {
         setIsSuccess(true);
         setTimeout(() => {
-          router.push("/login");
+          //setUser(userData);
+          setUser({
+            ...userData,
+            followers: 1,
+            following: 0,
+            posts: 0,
+          });
+
+          router.push("/profile");
         }, 2000);
       }, 1500);
     } catch (error) {
@@ -381,7 +400,7 @@ export default function SignupPage() {
               >
                 <div className="space-y-2">
                   <Label htmlFor="bio" className="flex items-center gap-2">
-                    <bio size={16} />
+                    <div size={16} />
                     bio Number
                   </Label>
                   <div className="relative">
@@ -416,15 +435,15 @@ export default function SignupPage() {
               >
                 <div className="space-y-2">
                   <Label htmlFor="date" className="flex items-center gap-2">
-                    <date size={16} />
+                    <div size={16} />
                     date Number
                   </Label>
                   <div className="relative">
                     <Input
                       id="date"
-                      name="date"
+                      name="dob"
                       type="date"
-                      value={formData.date}
+                      value={formData.dob}
                       onChange={handleChange}
                       className={`pr-10 ${
                         errors.date ? "border-destructive" : ""
