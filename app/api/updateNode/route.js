@@ -7,12 +7,12 @@ export async function POST(req) {
     const { label, where, updates } = body;
 
     // Validate input data
-    if (!label || typeof label !== "string") {
-      return NextResponse.json(
-        { error: "Invalid or missing 'label'" },
-        { status: 400 }
-      );
-    }
+    // if (!label || typeof label !== "string") {
+    //   return NextResponse.json(
+    //     { error: "Invalid or missing 'label'" },
+    //     { status: 400 }
+    //   );
+    // }
 
     if (!where || Object.keys(where).length === 0) {
       return NextResponse.json(
@@ -32,10 +32,12 @@ export async function POST(req) {
 
     // Call updateNode with validated data
     const response = await updateNode(label, where, updates);
+    console.log("Update Response:", response);
+    console.log("Response Records:", response.records);
 
-    if (response && response.records && response.records.length > 0) {
+    if (response && response.length > 0) {
       return NextResponse.json(
-        { message: "Node updated successfully", data: response.records[0].get("n") },
+        { message: "Node updated successfully", data: response[0].n.properties },
         { status: 200 }
       );
     } else {
@@ -44,6 +46,7 @@ export async function POST(req) {
         { status: 404 }
       );
     }
+    
   } catch (error) {
     console.error("Error updating node:", error);
     return NextResponse.json(

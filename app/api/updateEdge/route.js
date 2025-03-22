@@ -77,11 +77,11 @@ export async function POST(req) {
     );
 
     // Check if an edge was updated successfully
-    if (response && response.records && response.records.length > 0) {
+    if (response && response.length > 0) {
       return NextResponse.json(
         {
           message: "Edge updated successfully",
-          data: response.records[0].get("e"),
+          data: response[0].e.properties 
         },
         { status: 200 }
       );
