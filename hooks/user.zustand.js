@@ -4,11 +4,11 @@ import { persist } from "zustand/middleware";
 // Define the initial User data structure
 const initialState = {
   selectedUser: {
-    name: "saras",
+    name: "Dummy User",
     DOB: "2-34-2224",
     imageUrl:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzgh0Pd-fCG2LnUPP92d1DP7y2cdnugqFXyw&s",
-    email: "saras@gmail.com",
+    email: "default@gmail.com",
     phone: "0000000000",
     followers: 0,
     posts: 0,
