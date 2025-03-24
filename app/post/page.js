@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, MapPin, Smile, ArrowLeft } from "lucide-react"
+import { MapPin, Smile, ArrowLeft } from "lucide-react"
 import useUsers from "@/hooks/user.zustand"
 import { useRouter } from "next/navigation"
 
@@ -75,11 +75,11 @@ export default function CreatePost() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        label: "USER",
-        where: [{"name": user.name},{"email": user.email}],
-        edgeLabel: "POSTED_BY",
+        label: ["USER"],
+        where: {"name": user.name,"email": user.email},
+        edgeLabel: ["POSTED_BY"],
         edgeWhere: [],
-        adjNodeLabel: "POST",
+        adjNodeLabel: ["POST"],
         adjWhere: [],
       }),
     })
@@ -139,14 +139,16 @@ export default function CreatePost() {
     router.push("/profile")
   }
   
-
+  async function handleBack() {
+    router.push("/profile");
+  }
   return (
     <div className="flex flex-col h-screen bg-black text-white">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-800">
-        <Link href="#" className="text-white">
+      <button onClick={handleBack} className="text-white">
           <ArrowLeft className="w-6 h-6" />
-        </Link>
+        </button>
         <h1 className="text-lg font-semibold">Create new post</h1>
         <Button onClick={handleSubmit} variant="link" className="text-blue-500 font-semibold">
         
