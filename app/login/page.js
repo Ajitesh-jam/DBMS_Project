@@ -107,11 +107,12 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
+      console.log("Response :", response);
       const data = await response.json();
+      console.log("User data fetched from API:", data);
 
       if (data.length === 0) {
-        throw new Error("Invalid credentials. Please try again.");
+        throw new Error("0Invalid credentials. Please try again.");
       }
 
       const user = data[0].n.properties;
