@@ -94,15 +94,15 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          label: "USER",
+          label: ["USER"],
           where:
             loginMethod === "username"
-              ? [{ name: formData.username }]
+              ? { name: formData.username }
               : loginMethod === "email"
-              ? [{ email: formData.email }]
-              : [{ phone: formData.phone }],
+              ? { email: formData.email }
+              : { phone: formData.phone },
         }),
-      });
+      }); 
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
