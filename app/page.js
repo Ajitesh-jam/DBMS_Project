@@ -84,28 +84,28 @@ export default function Home() {
     }
   }, [controls, inView]);
 
-  useEffect(() => {
-    const whereCondition = [{ name: "Tobias Harris" }, { weight: 100 }];
+  // useEffect(() => {
+  //   const whereCondition = [{ name: "Tobias Harris" }, { weight: 100 }];
 
-    fetch("/api/getNodeByLabel", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        label: "PLAYER",
-        where: whereCondition, // Send the 'where' conditions properly
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json(); // Parse JSON correctly
-      })
-      .then((data) => console.log(data))
-      .catch((error) => console.error("Error:", error));
-  }, []);
+  //   fetch("/api/getNodeByLabel", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       label: "PLAYER",
+  //       where: whereCondition, // Send the 'where' conditions properly
+  //     }),
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  //       return response.json(); // Parse JSON correctly
+  //     })
+  //     .then((data) => console.log(data))
+  //     .catch((error) => console.error("Error:", error));
+  // }, []);
 
   return (
     <div className="w-full">

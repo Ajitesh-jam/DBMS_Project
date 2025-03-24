@@ -1,3 +1,4 @@
+import { q } from "framer-motion/client";
 import { start } from "repl";
 
 const neo4j = require("neo4j-driver");
@@ -50,26 +51,28 @@ async function runQuery(query, params = {}) {
 export const getNodeByLabel = async (label, where = {}) => {
   console.log("getNodeByLabel where:", where);
   let query = `MATCH (n:${label})`;
-  if (Array.isArray(where) && where.length > 0) {
-    const conditions = where
-      .map((condition) => {
-        // Extract key-value pair from each object
-        const [key, value] = Object.entries(condition)[0]; // Extract the first key-value pair
 
-        if (typeof value === "string") return `n.${key} = "${value}"`;
-        else if (typeof value === "number") return `n.${key} = ${value}`;
-        else if (typeof value === "boolean") return `n.${key} = ${value}`;
-        return "";
-      })
-      .filter(Boolean) // Remove empty strings
-      .join(" AND ");
+  // Build the conditions string
+  const conditions = Object.entries(where)
+    .map(([key, value]) => 
+       `n.${key} = $where_${key}`  // Use parameterized query for strings, booleans, etc.
+    )
+    .join(" AND ");
 
-    console.log("WHERE conditions:", conditions);
-    if (conditions) query += ` WHERE ${conditions}`;
-  }
+  console.log("WHERE conditions:", conditions);
+  if (conditions) query += ` WHERE ${conditions}`;
+  
   query += " RETURN n";
   console.log("Query:", query);
-  return await runQuery(query);
+
+  // Prepare the parameters for the query
+  const params = Object.fromEntries(
+    Object.entries(where).map(([key, value]) => [`where_${key}`, value])
+  );
+
+
+  console.log("query :", query);
+  return await runQuery(query, params);
 };
 
 export const getEdgesOfNode = async (
@@ -126,6 +129,81 @@ export const getEdgesOfNode = async (
   return await runQuery(query);
 };
 
+// export const getAdjacentNode = async (
+//   label,
+//   where,
+//   edgeLabel,
+//   edgeWhere = {},
+//   adjNodeLabel,
+//   adjWhere = {}
+// ) => {
+//   let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m:${adjNodeLabel})`;
+//   let conditions = [];
+
+//   // Handle node conditions (n)
+//   if (Array.isArray(where) && where.length > 0) {
+//     const nodeConditions = where
+//       .map((condition) => {
+//         const [key, value] = Object.entries(condition)[0]; // Extract key-value pair
+
+//         if (typeof value === "string") return `n.${key} = "${value}"`;
+//         if (typeof value === "number") return `n.${key} = ${value}`;
+//         if (typeof value === "boolean") return `n.${key} = ${value}`;
+//         return "";
+//       })
+//       .filter(Boolean)
+//       .join(" AND ");
+
+//     if (nodeConditions) conditions.push(nodeConditions);
+//   }
+
+//   // Handle edge conditions (e)
+//   if (Array.isArray(edgeWhere) && edgeWhere.length > 0) {
+//     const edgeConditions = edgeWhere
+//       .map((condition) => {
+//         const [key, value] = Object.entries(condition)[0];
+//         console.log("Edge Condition -> KEY:", key, "VALUE:", value);
+
+//         if (typeof value === "string") return `e.${key} = "${value}"`;
+//         if (typeof value === "number") return `e.${key} = ${value}`;
+//         if (typeof value === "boolean") return `e.${key} = ${value}`;
+//         return "";
+//       })
+//       .filter(Boolean)
+//       .join(" AND ");
+
+//     if (edgeConditions) conditions.push(edgeConditions);
+//   }
+//   // Handle adj node conditions (m)
+//   if (Array.isArray(adjWhere) && adjWhere.length > 0) {
+//     const adjConditions = adjWhere
+//       .map((condition) => {
+//         const [key, value] = Object.entries(condition)[0];
+//         console.log("Ad node Condition -> KEY:", key, "VALUE:", value);
+
+//         if (typeof value === "string") return `m.${key} = "${value}"`;
+//         if (typeof value === "number") return `m.${key} = ${value}`;
+//         if (typeof value === "boolean") return `m.${key} = ${value}`;
+//         return "";
+//       })
+//       .filter(Boolean)
+//       .join(" AND ");
+
+//     if (adjConditions) conditions.push(adjConditions);
+//   }
+
+//   // Append WHERE clause correctly
+//   if (conditions.length > 0) {
+//     query += ` WHERE ${conditions.join(" AND ")}`;
+//   }
+//   query += " return m;";
+
+//   console.log("Final Cypher Query:", query);
+
+//   return await runQuery(query);
+// };
+
+
 export const getAdjacentNode = async (
   label,
   where,
@@ -135,69 +213,51 @@ export const getAdjacentNode = async (
   adjWhere = {}
 ) => {
   let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m:${adjNodeLabel})`;
-  let conditions = [];
 
   // Handle node conditions (n)
-  if (Array.isArray(where) && where.length > 0) {
-    const nodeConditions = where
-      .map((condition) => {
-        const [key, value] = Object.entries(condition)[0]; // Extract key-value pair
+  const whereString = Object.entries(where)
+  .map(([key,value])=>
+      `n.${key} = $where_${key}`)
+  .join(" AND ");
 
-        if (typeof value === "string") return `n.${key} = "${value}"`;
-        if (typeof value === "number") return `n.${key} = ${value}`;
-        if (typeof value === "boolean") return `n.${key} = ${value}`;
-        return "";
-      })
-      .filter(Boolean)
-      .join(" AND ");
+  const edgeWhereString = Object.entries(edgeWhere)
+  .map(([key,value])=>
+      `n.${key} = $edgeWhere_${key}`)
+  .join(" AND ");
 
-    if (nodeConditions) conditions.push(nodeConditions);
-  }
+  const adjWhereString = Object.entries(adjWhere)
+  .map(([key,value])=>
+      `n.${key} = $adjWhere_${key}`)
+  .join(" AND ");
 
-  // Handle edge conditions (e)
-  if (Array.isArray(edgeWhere) && edgeWhere.length > 0) {
-    const edgeConditions = edgeWhere
-      .map((condition) => {
-        const [key, value] = Object.entries(condition)[0];
-        console.log("Edge Condition -> KEY:", key, "VALUE:", value);
+  console.log("WHERE conditions:", whereString);
+  if (whereString) query += ` WHERE ${whereString}`;
+  if (whereString && edgeWhereString) query += " AND ";
+  if (edgeWhereString) query += edgeWhereString;
+  if (whereString && adjWhereString) query += " AND ";
+  if (adjWhereString) query += adjWhereString;
 
-        if (typeof value === "string") return `e.${key} = "${value}"`;
-        if (typeof value === "number") return `e.${key} = ${value}`;
-        if (typeof value === "boolean") return `e.${key} = ${value}`;
-        return "";
-      })
-      .filter(Boolean)
-      .join(" AND ");
-
-    if (edgeConditions) conditions.push(edgeConditions);
-  }
-  // Handle adj node conditions (m)
-  if (Array.isArray(adjWhere) && adjWhere.length > 0) {
-    const adjConditions = adjWhere
-      .map((condition) => {
-        const [key, value] = Object.entries(condition)[0];
-        console.log("Ad node Condition -> KEY:", key, "VALUE:", value);
-
-        if (typeof value === "string") return `m.${key} = "${value}"`;
-        if (typeof value === "number") return `m.${key} = ${value}`;
-        if (typeof value === "boolean") return `m.${key} = ${value}`;
-        return "";
-      })
-      .filter(Boolean)
-      .join(" AND ");
-
-    if (adjConditions) conditions.push(adjConditions);
-  }
-
+  const params = {
+    ...Object.fromEntries(
+      Object.entries(where).map(([key, value]) => [`where_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(edgeWhere).map(([key, value]) => [`edgeWhere_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(adjWhere).map(([key, value]) => [`adjWhere_${key}`, value])
+    )
+        
+    
+  };
   // Append WHERE clause correctly
-  if (conditions.length > 0) {
-    query += ` WHERE ${conditions.join(" AND ")}`;
-  }
   query += " return m;";
 
   console.log("Final Cypher Query:", query);
+  console.log("Final Cypher params:", params);
 
-  return await runQuery(query);
+
+  return await runQuery(query,params);
 };
 
 export const createNode = async (labels, properties) => {

@@ -1,6 +1,6 @@
 const nextConfig = {
   images: {
-    domains: ["placeholder.com"],
+    domains: ["*"],
   },
 }
 

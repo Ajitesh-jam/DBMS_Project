@@ -6,8 +6,8 @@ import { SearchIcon, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import UserSearchResults from "@/components/user-search-results"
+import useFriends from "@/hooks/friend.zustand"
 import { debounce } from "@/lib/utils"
-import useUsers from "@/hooks/user.zustand";
 
 export default function SearchPage() {
   const router = useRouter()
@@ -17,7 +17,7 @@ export default function SearchPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null)
 
-  const setNewUser = useUsers((state) => state.setNewUser);
+  const setNewFriend = useFriends((state) => state.setNewFriend);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,7 +78,7 @@ export default function SearchPage() {
     try {
       // API call to get user data
       const response = await fetch("/api/getNodeByLabel", {
-        method: "POST", // ✅ Fixed incorrect method
+        method: "POST", 
         headers: {
           "Content-Type": "application/json",
         },
@@ -94,19 +94,19 @@ export default function SearchPage() {
 
       const data = await response.json()
       console.log("data",data);
-      const user = data[0].n.properties;
+      const user = data.length>0? data[0].n.properties :null;
       // If data is not an array or empty, use mock data
       if (!Array.isArray(data) || data.length === 0) {
         console.warn("No results found, using mock data.")
         setSearchResults(getMockUsers(term)) // Fallback to mock data
       } else {
         setSearchResults(data)
-        setNewUser(user);
+        setNewFriend(user);
       setIsSuccess(true);
 
       // Redirect to profile after success
       setTimeout(() => {
-        router.push("/profile");
+        router.push("/friendProfile");
       }, 1500);
       }
     } catch (err) {
@@ -136,11 +136,11 @@ export default function SearchPage() {
         debouncedSearch.cancel()
       }
     }
-  }, [searchTerm, debouncedSearch])
+  }, [searchTerm])
 
   // ✅ Handle user selection
   const handleUserSelect = (userId) => {
-    router.push(`/profile`)
+    router.push(`/friendProfile`)
   }
 
   return (

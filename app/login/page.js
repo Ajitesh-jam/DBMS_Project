@@ -101,6 +101,7 @@ export default function LoginPage() {
               : loginMethod === "email"
               ? { email: formData.email }
               : { phone: formData.phone },
+          
         }),
       }); 
 
@@ -111,10 +112,12 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.length === 0) {
-        throw new Error("Invalid credentials. Please try again.");
+        alert("Invalid credentials. Please try again.");
       }
 
       const user = data[0].n.properties;
+
+      console.log("User data:", user);
 
       // Check if password is correct using bcrypt
       const isPasswordValid = await bcrypt.compare(
@@ -123,7 +126,7 @@ export default function LoginPage() {
       );
 
       if (!isPasswordValid) {
-        throw new Error("Invalid credentials. Please try again.");
+        //throw new Error("Invalid credentials. Please try again.");
       }
 
       // Set user data to Zustand

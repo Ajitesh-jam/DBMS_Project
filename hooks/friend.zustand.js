@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// Define the initial User data structure
+// Define the initial Friend data structure
 const initialState = {
-  selectedUser: {
-    name: "Dummy User",
+  selectedFriend: {
+    name: "Dummy Friend",
     DOB: "2-34-2224",
     imageUrl:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzgh0Pd-fCG2LnUPP92d1DP7y2cdnugqFXyw&s",
@@ -18,7 +18,7 @@ const initialState = {
 };
 
 // Create Zustand store with expiration logic
-const useUsers = create(
+const useFriends = create(
   persist(
     (set, get) => {
       // Function to update state and reset timestamp
@@ -29,14 +29,14 @@ const useUsers = create(
       return {
         ...initialState,
 
-        // Add a new User
-        addUser: (User) => updateState({ selectedUser: User }),
+        // Add a new Friend
+        addFriend: (Friend) => updateState({ selectedFriend: Friend }),
 
-        // Remove a User (reset to default)
-        removeUser: () => updateState({ selectedUser: initialState.selectedUser }),
+        // Remove a Friend (reset to default)
+        removeFriend: () => updateState({ selectedFriend: initialState.selectedFriend }),
 
-        // Set a new User temporarily
-        setNewUser: (User) => updateState({ selectedUser: User }),
+        // Set a new Friend temporarily
+        setNewFriend: (Friend) => updateState({ selectedFriend: Friend }),
 
         // Check expiration on initialization
         checkExpiration: () => {
@@ -45,20 +45,20 @@ const useUsers = create(
           const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
           if (timeDiff > oneDay) {
-            set({ selectedUser: initialState.selectedUser, lastUpdated: Date.now() });
+            set({ selectedFriend: initialState.selectedFriend, lastUpdated: Date.now() });
           }
         },
       };
     },
     {
-      name: "User-store", // Key for localStorage
+      name: "Friend-store", // Key for localStorage
       getStorage: () => localStorage, // Use localStorage
     }
   )
 );
 
 // Run expiration check on store initialization
-useUsers.getState().checkExpiration();
+useFriends.getState().checkExpiration();
 
-export default useUsers;
+export default useFriends;
 

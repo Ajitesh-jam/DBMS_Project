@@ -6,58 +6,13 @@ import { Heart, MessageCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import useUsers from "@/hooks/user.zustand"
 
-export default function PostGrid({ active }) {
-  const [posts, setPosts] = useState([])
-  const user = useUsers((state) => state.selectedUser)
+export default function PostGrid({ active,posts }) {
+  //const [posts, setPosts] = useState([])
 
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const response = await fetch("/api/getAdjNodeByLabel", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            label: ["USER"],
-            where: { name: user.name, email: user.email },
-            edgeLabel: "POSTED_BY",
-            edgeWhere: {},
-            adjNodeLabel: "POST",
-            adjWhere: {},
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const posts = await response.json();
-        console.log("Posts Response:", posts);
-
-        if (Array.isArray(posts)) {
-          posts.forEach((post) => {
-            post.id = Math.floor(Math.random() * 1000);
-            post.likes = Math.floor(Math.random() * 1000);
-            post.comments = Math.floor(Math.random() * 100);
-          });
-
-          console.log("Posts with Added Fields:", posts);
-          setPosts(posts);
-        } else {
-          console.error("Posts is not an array:", posts);
-        }
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    }
-
-    fetchPosts();
-  }, [user]);
 
   return (
     <div className="grid grid-cols-3 gap-1 md:gap-4">
-      {posts.map((post, index) => (
+      {posts && posts.map((post, index) => (
         <motion.div
           key={post.id}
           className="relative aspect-square group"
@@ -65,10 +20,10 @@ export default function PostGrid({ active }) {
           animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
         >
-          <Image 
+          <img 
             src={(post.m?.properties?.imageUrl) || "/placeholder.svg"} 
             alt={`Post ${post.id}`} 
-            fill 
+            //fill={true} 
             className="object-cover" 
           />
 

@@ -24,7 +24,7 @@ export default function CreatePost() {
     setIsValidImage(true)
   }
   const user= useUsers((state)=> (state.selectedUser))
-  console.log("user",user)
+ 
   // Handle Image Load Success
   const handleImageLoad = () => {
     setIsLoading(false)

@@ -187,7 +187,7 @@ export default function SignupPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          label: "USER",
+          label: ["USER"],
           properties: userData,
         }),
       })
