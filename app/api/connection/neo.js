@@ -222,12 +222,12 @@ export const getAdjacentNode = async (
 
   const edgeWhereString = Object.entries(edgeWhere)
   .map(([key,value])=>
-      `n.${key} = $edgeWhere_${key}`)
+      `e.${key} = $edgeWhere_${key}`)
   .join(" AND ");
 
   const adjWhereString = Object.entries(adjWhere)
   .map(([key,value])=>
-      `n.${key} = $adjWhere_${key}`)
+      `m.${key} = $adjWhere_${key}`)
   .join(" AND ");
 
   console.log("WHERE conditions:", whereString);
@@ -288,52 +288,66 @@ export const createEdge = async (
   endNodeLabel,
   endNodeWhere,
   edgeLabel,
-  properties
+  properties = {}
 ) => {
-  // Convert labels into a string format
-  const startLabelString = startNodeLabel.join(":");
-  const endLabelString = endNodeLabel.join(":");
+  try {
+    // Convert labels into a string format
+    const startLabelString = startNodeLabel.join(":");
+    const endLabelString = endNodeLabel.join(":");
 
-  // Convert properties into a Cypher-compatible key-value string
-  const propsString = Object.entries(properties)
-    .map(([key, value]) => {
-      if (typeof value === "string") return `${key}: "${value}"`;
-      if (typeof value === "number" || typeof value === "boolean")
-        return `${key}: ${value}`;
-      return "";
-    })
-    .filter(Boolean) // Removes any empty values
-    .join(", ");
+    // Convert properties into a Cypher-compatible key-value string
+    const propsString = Object.entries(properties)
+      .map(([key, value]) => {
+        if (typeof value === "string") return `${key}: "${value}"`;
+        if (typeof value === "number" || typeof value === "boolean") return `${key}: ${value}`;
+        return "";
+      })
+      .filter(Boolean) // Removes any empty values
+      .join(", ");
 
-  // Construct the final query
-  const query = `MATCH (n:${startLabelString}) WHERE ${Object.entries(
-    startNodeWhere
-  )
-    .map(([k, v]) => `n.${k} = $start_${k}`)
-    .join(" AND ")}
-    MATCH (m:${endLabelString}) WHERE ${Object.entries(endNodeWhere)
-      .map(([k, v]) => `m.${k} = $end_${k}`)
-      .join(" AND ")}
-    CREATE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
-    RETURN e`;
-  console.log("Final Cypher Query:", query);
-  console.log("Properties:", properties);
-  console.log("Start Node Where:", startNodeWhere);
-  console.log("End Node Where:", endNodeWhere);
-  const params = {
-    // Add start node conditions with prefix `start_`
-    ...Object.fromEntries(
-      Object.entries(startNodeWhere).map(([k, v]) => [`start_${k}`, v])
-    ),
-    // Add end node conditions with prefix `end_`
-    ...Object.fromEntries(
-      Object.entries(endNodeWhere).map(([k, v]) => [`end_${k}`, v])
-    ),
-    // Add edge properties directly
-    ...properties,
-  };
-  return await runQuery(query, params);
+    // Construct WHERE clauses for start and end nodes
+    const startWhereString = Object.keys(startNodeWhere)
+      .map((k) => `n.${k} = $start_${k}`)
+      .join(" AND ");
+
+    const endWhereString = Object.keys(endNodeWhere)
+      .map((k) => `m.${k} = $end_${k}`)
+      .join(" AND ");
+
+    // Final Cypher query
+    const query = `
+      MATCH (n:${startLabelString}), (m:${endLabelString})
+      WHERE ${startWhereString} AND ${endWhereString}
+      MERGE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
+      RETURN e
+    `;
+
+    console.log("Final Cypher Query:", query);
+    console.log("Properties:", properties);
+    console.log("Start Node Where:", startNodeWhere);
+    console.log("End Node Where:", endNodeWhere);
+
+    // Prepare query parameters
+    const params = {
+      // Add start node conditions with prefix `start_`
+      ...Object.fromEntries(
+        Object.entries(startNodeWhere).map(([k, v]) => [`start_${k}`, v])
+      ),
+      // Add end node conditions with prefix `end_`
+      ...Object.fromEntries(
+        Object.entries(endNodeWhere).map(([k, v]) => [`end_${k}`, v])
+      ),
+    };
+
+    // Run query using runQuery function
+    const result = await runQuery(query, params);
+    return result;
+  } catch (error) {
+    console.error("Error creating edge:", error);
+    throw error;
+  }
 };
+
 
 export const createAdjacentNode = async (
   startNodeLabel, // Array of labels for start node
