@@ -37,11 +37,11 @@ export default function FriendProfilePage({ activeUserId }) {
           },
           body: JSON.stringify({
             label: ["USER"],
-            where: { name: Friend.name }, 
+            where: { name: Friend.name },
             edgeLabel: "FOLLOW_REQUESTED",
             edgeWhere: {},// Friend being viewed
             adjNodeLabel: ["USER"],
-            adjWhere: {name: user.name} // Active user logged in
+            adjWhere: { name: user.name } // Active user logged in
           }),
         });
 
@@ -50,13 +50,13 @@ export default function FriendProfilePage({ activeUserId }) {
         }
 
         const result = await response.json();
-        console.log("result for response",result);
+        console.log("result for response", result);
         // console.log("result.properties:",result.properties);
         // console.log("result.exists:",result.exists);
-        if (result) {
-          console.log("Result is null or undefined!");
-        
-        
+        if (result.length) {
+          console.log("Result is perfect!!");
+
+
           setShowPopup(true);
           setFollowRequestProps(result.properties);
         }
@@ -83,7 +83,7 @@ export default function FriendProfilePage({ activeUserId }) {
           startNodeLabel: ["USER"],
           startNodeWhere: { name: Friend.name },
           endNodeLabel: ["USER"],
-          endNodeWhere: { name:user.name },
+          endNodeWhere: { name: user.name },
           edgeLabel: "FOLLOW_REQUESTED",
         }),
       });
@@ -114,7 +114,7 @@ export default function FriendProfilePage({ activeUserId }) {
 
       console.log("Follow request accepted successfully!");
       setShowPopup(false);
-    } catch (error) {
+    } catch (error) { 
       console.error("Error accepting invitation:", error);
     }
   };
@@ -194,16 +194,45 @@ export default function FriendProfilePage({ activeUserId }) {
         <Dialog open={showPopup} onOpenChange={setShowPopup}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Follow Request</DialogTitle>
-              <p>{Friend.name} has sent you a follow request.</p>
+              <DialogTitle ><p className="text-black">Follow Request</p></DialogTitle>
+              <p className="text-black">{Friend.name} has sent you a follow request.</p>
             </DialogHeader>
             <DialogFooter>
               <Button onClick={acceptInvitation} className="bg-green-500 text-white">
-                Accept Invitation
+                Approve
               </Button>
-              <Button onClick={() => setShowPopup(false)} className="bg-gray-300 text-black">
-                Cancel
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/deleteEdge", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        startNodeLabel: ["USER"],
+                        startNodeWhere: { name: Friend.name }, // Friend sending the request
+                        endNodeLabel: ["USER"],
+                        endNodeWhere: { id: activeUserId }, // Active user (logged in user)
+                        edgeLabel: "FOLLOW_REQUESTED",
+                      }),
+                    });
+
+                    if (!response.ok) {
+                      throw new Error("Error deleting follow request!");
+                    }
+
+                    console.log("Follow request rejected successfully!");
+                    setShowPopup(false); // Close popup after rejecting
+                  } catch (error) {
+                    console.error("Error rejecting follow request:", error);
+                  }
+                }}
+                className="bg-gray-300 text-black"
+              >
+                Reject
               </Button>
+
             </DialogFooter>
           </DialogContent>
         </Dialog>

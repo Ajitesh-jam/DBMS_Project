@@ -212,7 +212,7 @@ export const getAdjacentNode = async (
   adjNodeLabel,
   adjWhere = {}
 ) => {
-  let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m:${adjNodeLabel})`;
+  let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m:${adjNodeLabel}) `;
 
   // Handle node conditions (n)
   const whereString = Object.entries(where)
@@ -231,7 +231,9 @@ export const getAdjacentNode = async (
   .join(" AND ");
 
   console.log("WHERE conditions:", whereString);
-  if (whereString) query += ` WHERE ${whereString}`;
+  if(whereString || adjWhereString || edgeWhereString)
+    query += " WHERE ";
+  if (whereString) query += whereString;
   if (whereString && edgeWhereString) query += " AND ";
   if (edgeWhereString) query += edgeWhereString;
   if (whereString && adjWhereString) query += " AND ";
@@ -291,21 +293,21 @@ export const createEdge = async (
   properties = {}
 ) => {
   try {
-    // Convert labels into a string format
+    // ✅ Convert labels into a string format
     const startLabelString = startNodeLabel.join(":");
     const endLabelString = endNodeLabel.join(":");
 
-    // Convert properties into a Cypher-compatible key-value string
+    // ✅ Convert properties into a Cypher-compatible key-value string
     const propsString = Object.entries(properties)
       .map(([key, value]) => {
         if (typeof value === "string") return `${key}: "${value}"`;
         if (typeof value === "number" || typeof value === "boolean") return `${key}: ${value}`;
         return "";
       })
-      .filter(Boolean) // Removes any empty values
+      .filter(Boolean)
       .join(", ");
 
-    // Construct WHERE clauses for start and end nodes
+    // ✅ Construct WHERE clauses for start and end nodes
     const startWhereString = Object.keys(startNodeWhere)
       .map((k) => `n.${k} = $start_${k}`)
       .join(" AND ");
@@ -314,39 +316,48 @@ export const createEdge = async (
       .map((k) => `m.${k} = $end_${k}`)
       .join(" AND ");
 
-    // Final Cypher query
-    const query = `
+    // ✅ Final Cypher query with proper conditions
+    let query = `
       MATCH (n:${startLabelString}), (m:${endLabelString})
-      WHERE ${startWhereString} AND ${endWhereString}
+    `;
+
+    // ✅ Add WHERE clause only if there are conditions
+    if (startWhereString || endWhereString) {
+      query += `
+      WHERE ${[startWhereString, endWhereString].filter(Boolean).join(" AND ")}
+      `;
+    }
+
+    // ✅ Handle properties dynamically in MERGE
+    query += `
       MERGE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
       RETURN e
     `;
 
-    console.log("Final Cypher Query:", query);
-    console.log("Properties:", properties);
-    console.log("Start Node Where:", startNodeWhere);
-    console.log("End Node Where:", endNodeWhere);
+    console.log("✅ Final Cypher Query:", query);
+    console.log("📚 Properties:", properties);
+    console.log("🔎 Start Node Where:", startNodeWhere);
+    console.log("🔎 End Node Where:", endNodeWhere);
 
-    // Prepare query parameters
+    // ✅ Prepare query parameters
     const params = {
-      // Add start node conditions with prefix `start_`
       ...Object.fromEntries(
         Object.entries(startNodeWhere).map(([k, v]) => [`start_${k}`, v])
       ),
-      // Add end node conditions with prefix `end_`
       ...Object.fromEntries(
         Object.entries(endNodeWhere).map(([k, v]) => [`end_${k}`, v])
       ),
     };
 
-    // Run query using runQuery function
+    // ✅ Run query using runQuery function
     const result = await runQuery(query, params);
     return result;
   } catch (error) {
-    console.error("Error creating edge:", error);
+    console.error("❌ Error creating edge:", error);
     throw error;
   }
 };
+
 
 
 export const createAdjacentNode = async (
@@ -501,7 +512,8 @@ export const deleteAdjacentNode = async (
     query += ` WHERE ${conditions.join(" AND ")}`;
   }
 
-  query += " DELETE e, m"; // Deletes the edge and the adjacent node
+  query += " DELETE e DETACH DELETE m"; 
+
   console.log("Final Delete Adjacent Node Query:", query);
   const params = {
     ...Object.fromEntries(

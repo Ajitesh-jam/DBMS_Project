@@ -6,6 +6,7 @@ import UserHeader from "@/components/user-header";
 import StoryCircles from "@/components/story-circles";
 import PostGrid from "@/components/post-grid";
 import ReelGrid from "@/components/reel-grid";
+import PostModal from "@/components/post-modal";
 
 import useUsers from "@/hooks/user.zustand";
 
@@ -13,23 +14,19 @@ export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
 
   const user = useUsers((state) => state.selectedUser);
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Mock user data
   const [userData, setUserData] = useState({
-    // username: "johndoe",
-    // fullName: "John Doe",
-    // profileImage: "/placeholder.svg?height=150&width=150",
-    // isFollowing: false,
-    // postsCount: 42,
-    // followersCount: 1234,
-    // followingCount: 567,
-    // bio:
-    //   "📸 Photography enthusiast | 🌍 Travel lover | 🍕 Food explorer\nwww.johndoe.com",
+    followers: 0,
+    following: 0,
+    posts: 0,
   });
 
+  // ✅ Fetch posts dynamically from API
   useEffect(() => {
-    // add attributes like followers:0 ,following ;0, posts:0 to user
     setUserData({
       ...user,
       followers: 0,
@@ -58,20 +55,18 @@ export default function UserProfilePage() {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const posts = await response.json();
-        console.log("Posts Response:", posts);
-
-        if (Array.isArray(posts)) {
-          posts.forEach((post) => {
+        const fetchedPosts = await response.json();
+        if (Array.isArray(fetchedPosts)) {
+          fetchedPosts.forEach((post) => {
             post.id = Math.floor(Math.random() * 1000);
             post.likes = Math.floor(Math.random() * 1000);
             post.comments = Math.floor(Math.random() * 100);
+            post.ownerEmail = user.email; // Store owner's email for deletion
           });
 
-          console.log("Posts with Added Fields:", posts);
-          setPosts(posts);
+          setPosts(fetchedPosts);
         } else {
-          console.error("Posts is not an array:", posts);
+          console.error("Posts is not an array:", fetchedPosts);
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -79,17 +74,20 @@ export default function UserProfilePage() {
     }
 
     fetchPosts();
-
-    //setUserData(user);
   }, [user]);
 
+  // ✅ Handle post selection to open modal
+  const handlePostClick = (post) => {
+    setSelectedPost(post);
+    setModalOpen(true);
+  };
 
+  // ✅ Remove post from state after deleting
+  const handleDeletePost = (postId) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+  };
 
-  useEffect(() => {
-
-  }, [user]);
-
-  // Mock stories data
+  // ✅ Mock stories data
   const stories = [
     { id: 1, image: "/placeholder.svg?height=80&width=80", title: "Travel" },
     { id: 2, image: "/placeholder.svg?height=80&width=80", title: "Food" },
@@ -103,13 +101,24 @@ export default function UserProfilePage() {
       <UserHeader user={userData} />
       <StoryCircles stories={stories} />
 
+      {/* ✅ Post Modal */}
+      {selectedPost && (
+        <PostModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          post={selectedPost}
+          onDelete={handleDeletePost}
+        />
+      )}
+
       <Tabs defaultValue="posts" className="mt-8" onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-2">
           <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="reels">Reels</TabsTrigger>
         </TabsList>
         <TabsContent value="posts" className="mt-6">
-          <PostGrid active={activeTab === "posts"} posts={posts} />
+          {/* ✅ Pass handlePostClick to PostGrid */}
+          <PostGrid active={activeTab === "posts"} posts={posts} onPostClick={handlePostClick} />
         </TabsContent>
         <TabsContent value="reels" className="mt-6">
           <ReelGrid active={activeTab === "reels"} />
