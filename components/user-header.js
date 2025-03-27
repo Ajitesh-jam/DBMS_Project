@@ -3,8 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { MessageSquare, UserPlus, UserCheck } from "lucide-react";
 import { useState } from "react";
+import Router from "next/router";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
 
 export default function UserHeader({ user }) {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing);
@@ -16,6 +19,7 @@ export default function UserHeader({ user }) {
   useEffect(() => {
     console.log("User in header: ", user);
   }, [user]);
+  const router = useRouter();
 
   return (
     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
@@ -60,14 +64,22 @@ export default function UserHeader({ user }) {
             <span className="font-bold">{user.posts}</span>
             <p className="text-sm text-muted-foreground">posts</p>
           </div>
-          <div className="text-center">
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => router.push(`/followers`)}
+          >
             <span className="font-bold">{user.followers}</span>
             <p className="text-sm text-muted-foreground">followers</p>
           </div>
-          <div className="text-center">
+
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => router.push(`/following`)}
+          >
             <span className="font-bold">{user.following}</span>
             <p className="text-sm text-muted-foreground">following</p>
           </div>
+
         </div>
 
         <div className="mt-4">

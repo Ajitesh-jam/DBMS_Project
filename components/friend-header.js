@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { MessageSquare, UserPlus, UserCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import useUsers from "@/hooks/user.zustand";
+import { useRouter } from "next/navigation";
 
 export default function FriendHeader({ Friend, activeUserId }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
   const user = useUsers((state) => state.selectedUser);
-
+  const router = useRouter();
   // Function to persist follow state to localStorage
   const saveFollowState = (friendId, value) => {
     localStorage.setItem(`follow_${friendId}`, JSON.stringify(value));
@@ -111,11 +112,12 @@ export default function FriendHeader({ Friend, activeUserId }) {
   // Load follow state from localStorage on component mount
   useEffect(() => {
     const initialFollowState = getFollowState(Friend.id);
-    setIsFollowing(initialFollowState);
+    setIsFollowing(initialFollowState || false);
     console.log("Friend in header:", Friend);
   }, [Friend.id]);
 
   return (
+    
     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
       {/* Profile Picture */}
       <div className="relative h-24 w-24 md:h-36 md:w-36 rounded-full overflow-hidden">
@@ -168,11 +170,18 @@ export default function FriendHeader({ Friend, activeUserId }) {
             <span className="font-bold">{Friend.posts}</span>
             <p className="text-sm text-muted-foreground">posts</p>
           </div>
-          <div className="text-center">
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => router.push(`/followers`)}
+          >
             <span className="font-bold">{Friend.followers}</span>
             <p className="text-sm text-muted-foreground">followers</p>
           </div>
-          <div className="text-center">
+
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => router.push(`/following`)}
+          >
             <span className="font-bold">{Friend.following}</span>
             <p className="text-sm text-muted-foreground">following</p>
           </div>

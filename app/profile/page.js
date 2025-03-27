@@ -7,8 +7,13 @@ import StoryCircles from "@/components/story-circles";
 import PostGrid from "@/components/post-grid";
 import ReelGrid from "@/components/reel-grid";
 import PostModal from "@/components/post-modal";
-
 import useUsers from "@/hooks/user.zustand";
+
+
+// Inside your JSX where UserHeader is rendered
+
+
+
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
@@ -43,7 +48,7 @@ export default function UserProfilePage() {
           },
           body: JSON.stringify({
             label: ["USER"],
-            where: { name: user.name, email: user.email },
+            where: { name: user.name },
             edgeLabel: "POSTED_BY",
             edgeWhere: {},
             adjNodeLabel: "POST",
@@ -56,24 +61,39 @@ export default function UserProfilePage() {
         }
 
         const fetchedPosts = await response.json();
-        if (Array.isArray(fetchedPosts)) {
-          fetchedPosts.forEach((post) => {
-            post.id = Math.floor(Math.random() * 1000);
-            post.likes = Math.floor(Math.random() * 1000);
-            post.comments = Math.floor(Math.random() * 100);
-            post.ownerEmail = user.email; // Store owner's email for deletion
-          });
+        console.log("Posts Response:", fetchedPosts);
 
-          setPosts(fetchedPosts);
-        } else {
-          console.error("Posts is not an array:", fetchedPosts);
+        if (Array.isArray(fetchedPosts)) {
+          const enhancedPosts = fetchedPosts.map((post) => ({
+            ...post,
+            id: Math.floor(Math.random() * 1000),
+            likes: Math.floor(Math.random() * 1000),
+            comments: Math.floor(Math.random() * 100),
+          }));
+
+          setPosts(enhancedPosts);
+
+          // Update post count dynamically in FriendData
+          setUserData((prev) => ({
+            ...prev,
+            posts: enhancedPosts.length,
+          }));
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
     }
 
-    fetchPosts();
+    setUserData({
+      ...user,
+      followers: user.followers || 0,
+      following: user.following || 0,
+      posts: 0,
+    });
+
+    if (user.name) {
+      fetchPosts();
+    }
   }, [user]);
 
   // ✅ Handle post selection to open modal

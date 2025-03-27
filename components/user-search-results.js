@@ -39,24 +39,23 @@ export default function UserSearchResults({ results, isLoading, searchTerm, onUs
       <h2 className="text-lg font-medium mb-4">Search Results</h2>
 
       <AnimatePresence>
-        {results.map((user) => (
+        {results.map((user, index) => (
           <motion.div
-            key={user.id}
+            key={user.id || `user-${index}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className={`flex items-center p-4 rounded-lg cursor-pointer transition-colors ${
-              hoveredUser === user.id ? "bg-accent" : "hover:bg-muted"
-            }`}
+            className={`flex items-center p-4 rounded-lg cursor-pointer transition-colors ${hoveredUser === user.id ? "bg-accent" : "hover:bg-muted"
+              }`}
             onClick={() => onUserSelect(user.id)}
             onMouseEnter={() => setHoveredUser(user.id)}
             onMouseLeave={() => setHoveredUser(null)}
           >
             <div className="relative h-12 w-12 rounded-full overflow-hidden mr-4">
-              <img src={user.profileImage || "/placeholder.svg"} alt={user.username} 
-              //fill
-              className="object-cover" />
+              <img src={user.profileImage || "/placeholder.svg"} alt={user.username}
+                //fill
+                className="object-cover" />
             </div>
 
             <div className="flex-1">

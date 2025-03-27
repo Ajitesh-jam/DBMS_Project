@@ -158,7 +158,7 @@ export default function SearchPage() {
             placeholder="Search for users..."
             className="pl-10 pr-4 py-6 text-lg w-full"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.   target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           {isSearching && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">

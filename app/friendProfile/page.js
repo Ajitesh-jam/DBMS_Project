@@ -30,7 +30,7 @@ export default function FriendProfilePage({ activeUserId }) {
   useEffect(() => {
     async function checkFollowRequest() {
       try {
-        const response = await fetch("/api/getAdjNodeByLabel", {
+        const response = await fetch("/api/getStartAdjNodeByLabel", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
