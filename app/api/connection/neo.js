@@ -35,6 +35,74 @@ export const getWholeGraph = async () => {
   }
 };
 
+export const calculatePageRank = async () => {
+  const session = driver.session();
+  const dampingFactor = 0.85; // Damping factor (usually between 0.85 - 0.9)
+  const maxIterations = 20;  // Maximum number of iterations to avoid infinite loops
+  const threshold = 0.0001;  // Convergence threshold for stopping condition
+
+  try {
+    // Step 1: Get the total number of nodes in the graph
+    const result = await session.run('MATCH (n) RETURN count(n) AS totalNodes');
+    const totalNodes = result.records[0].get('totalNodes').toInt();
+    
+    // Step 2: Initialize PageRank for each node
+    await session.run('MATCH (n) SET n.pageRank = 1.0 / $totalNodes', { totalNodes });
+    
+    let iteration = 0;
+    let converged = false;
+    
+    while (iteration < maxIterations && !converged) {
+      iteration++;
+
+      // Step 3: Calculate the new PageRank for each node
+      const updateResult = await session.run(`
+        MATCH (n)
+        SET n.pageRank = (1 - $dampingFactor) / $totalNodes +
+                         $dampingFactor * SUM(
+                             CASE WHEN (m)-[:LINKS_TO]->(n) THEN m.pageRank / SIZE((m)-[:LINKS_TO]->()) ELSE 0 END
+                         )
+        RETURN n.pageRank AS newPageRank, n
+      `, { dampingFactor, totalNodes });
+
+      // Step 4: Check for convergence
+      const changes = updateResult.records.map((record) => {
+        const newPageRank = record.get('newPageRank').toNumber();
+        const oldPageRank = record.get('n').properties.pageRank;
+
+        // Check if the change is below the threshold (convergence condition)
+        return Math.abs(newPageRank - oldPageRank) < threshold;
+      });
+
+      // If all nodes have converged (i.e., the changes are below the threshold)
+      converged = changes.every((change) => change);
+      
+      // If convergence happens, break early
+      if (converged) {
+        console.log(`PageRank calculation converged in ${iteration} iterations.`);
+        break;
+      }
+      
+      console.log(`Iteration ${iteration} complete, continuing...`);
+    }
+
+    // Step 5: Fetch updated PageRank values for all nodes
+    const pageRankResult = await session.run('MATCH (n) RETURN n.name AS nodeName, n.pageRank AS pageRank');
+    const pageRankValues = pageRankResult.records.map((record) => ({
+      nodeName: record.get('nodeName'),
+      pageRank: record.get('pageRank').toNumber()
+    }));
+
+    return pageRankValues;
+  } catch (error) {
+    console.error('Error calculating PageRank:', error);
+    throw error;
+  } finally {
+    session.close();
+  }
+};
+
+
 async function runQuery(query, params = {}) {
   const session = driver.session();
   try {
