@@ -24,6 +24,7 @@ export default function CreatePost() {
     setIsValidImage(true)
   }
   const user= useUsers((state)=> (state.selectedUser))
+  const setNewUser= useUsers((state)=> (state.setNewUser))
  
 
   const handleImageLoad = () => {
@@ -73,11 +74,9 @@ export default function CreatePost() {
     }
       
     // Handle form submission logic here
-    console.log("Image URL:", imageUrl)
-    console.log("Description:", description)
-    console.log("Location:", location)
-
-    
+    console.log("Image URL:", imageUrl);
+    console.log("Description:", description);
+    console.log("Location:", location);
 
     const posts = await fetch("/api/getAdjNodeByLabel", {
       method: "POST",
@@ -107,14 +106,12 @@ export default function CreatePost() {
       
       })
       .catch((error) => console.error("Error:", error));
-    // Reset fields after submission
-      console.log("Posts:", posts);
 
-       const postCount = posts.length|| 0;
-      // console.log("Current post count:", postCount);
-  
-      const newPostName = `${postCount + 1}`;
-      console.log("New Post Name:", newPostName);
+    // Reset fields after submission
+    console.log("Posts:", posts);
+    const postCount = posts.length|| 0;
+    const newPostName = `${postCount + 1}`;
+    console.log("New Post Name:", newPostName);
 
 
     await fetch("/api/createAdjacentNode", {
@@ -142,6 +139,40 @@ export default function CreatePost() {
       .then((data) => console.log(data))
       .catch((error) => console.error("Error:", error));
     // Reset fields after submission
+
+    const incrementPostsResponse = await fetch("/api/updateNode", {
+      method: "POST",
+      headers: {
+      "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+      label: ["USER"],
+      where: { name: user.name, email: user.email },
+      updates: {
+        posts: postCount + 1,
+      },
+      }),
+    })
+      .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json(); // Parse JSON correctly
+      })
+      .then((res) => {
+      console.log("Updated user posts count:", res);
+      console.log("Set new user:", user);
+      setNewUser({
+        ...user,
+        posts: res.data.posts,
+      });
+      console.log("Updated user data:", user);
+      })
+      .catch((error) => console.error("Error updating posts count:", error));
+
+
+    
+
     setImageUrl("")
     setDescription("")
     setLocation("")

@@ -27,6 +27,7 @@ export default function UserProfilePage() {
   //   posts: 0,
   // });
 
+
   // ✅ Fetch posts dynamically from API
   useEffect(() => {
     // setUserData({
@@ -82,15 +83,11 @@ export default function UserProfilePage() {
     }
   }, [user]);
 
+
   // ✅ Handle post selection to open modal
   const handlePostClick = (post) => {
     setSelectedPost(post);
     setModalOpen(true);
-  };
-
-  // ✅ Remove post from state after deleting
-  const handleDeletePost = (postId) => {
-    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
   };
 
   // ✅ Mock stories data
@@ -113,7 +110,6 @@ export default function UserProfilePage() {
           open={modalOpen}
           onClose={() => setModalOpen(false)}
           post={selectedPost}
-          onDelete={handleDeletePost}
         />
       )}
 
