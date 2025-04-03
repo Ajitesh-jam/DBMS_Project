@@ -61,14 +61,14 @@ export default function UserHeader({ user }) {
 
         <div className="flex justify-center md:justify-start gap-6 mt-6">
           <div className="text-center">
-            <span className="font-bold">{user.posts.low}</span>
+            <span className="font-bold">{user.posts}</span>
             <p className="text-sm text-muted-foreground">posts</p>
           </div>
           <div
             className="text-center cursor-pointer"
             onClick={() => router.push(`/followers`)}
           >
-            <span className="font-bold">{user.followerscount.low}</span>
+            <span className="font-bold">{user.followerscount?.low || 0}</span>
             <p className="text-sm text-muted-foreground">followers</p>
           </div>
 
@@ -76,7 +76,7 @@ export default function UserHeader({ user }) {
             className="text-center cursor-pointer"
             onClick={() => router.push(`/following`)}
           >
-            <span className="font-bold">{user.followingcount.low}</span>
+            <span className="font-bold">{user.followingcount?.low || 0}</span>
             <p className="text-sm text-muted-foreground">following</p>
           </div>
 
