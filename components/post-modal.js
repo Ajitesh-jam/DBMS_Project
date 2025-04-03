@@ -49,7 +49,7 @@ export default function PostModal({ open, onClose, post, onDelete }) {
           exit={{ opacity: 0 }}
         >
           {/* ✅ Modal Container */}
-          <div className="relative w-full max-w-4xl bg-white rounded-lg overflow-hidden">
+          <div className="relative w-[40vw] h-[70vh] bg-white rounded-lg overflow-hidden">
 
             {/* ✅ 3 Dots (More Options) in Top-Right */}
             <button
@@ -92,7 +92,7 @@ export default function PostModal({ open, onClose, post, onDelete }) {
             <img
               src={post.m?.properties?.imageUrl || "/placeholder.svg"}
               alt={`Post ${post.id}`}
-              className="w-full h-[90vh] object-contain bg-black"
+              className="w-full max-w-[50vh] max-h-[50vh] object-contain bg-black m-auto"
             />
 
             {/* ✅ Post Description Below */}

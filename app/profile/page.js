@@ -9,35 +9,32 @@ import ReelGrid from "@/components/reel-grid";
 import PostModal from "@/components/post-modal";
 import useUsers from "@/hooks/user.zustand";
 
-
 // Inside your JSX where UserHeader is rendered
-
-
-
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
 
-  const user = useUsers((state) => state.selectedUser);
+  const user = useUsers((state) => state.selectedUser); // Get the user state
+  const setUserData = useUsers((state) => state.setNewUser); // Get the setNewUser function
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   // Mock user data
-  const [userData, setUserData] = useState({
-    followers: 0,
-    following: 0,
-    posts: 0,
-  });
+  // const [userData, setUserData] = useState({
+  //   followers: 0,
+  //   following: 0,
+  //   posts: 0,
+  // });
 
   // ✅ Fetch posts dynamically from API
   useEffect(() => {
-    setUserData({
-      ...user,
-      followers: 0,
-      following: 0,
-      posts: 0,
-    });
+    // setUserData({
+    //   ...user,
+    //   followers: 0,
+    //   following: 0,
+    //   posts: 0,
+    // });
 
     async function fetchPosts() {
       try {
@@ -74,22 +71,11 @@ export default function UserProfilePage() {
           setPosts(enhancedPosts);
 
           // Update post count dynamically in FriendData
-          setUserData((prev) => ({
-            ...prev,
-            posts: enhancedPosts.length,
-          }));
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
     }
-
-    setUserData({
-      ...user,
-      followers: user.followers || 0,
-      following: user.following || 0,
-      posts: 0,
-    });
 
     if (user.name) {
       fetchPosts();
@@ -118,7 +104,7 @@ export default function UserProfilePage() {
 
   return (
     <main className="container max-w-4xl mx-auto px-4 py-8">
-      <UserHeader user={userData} />
+      <UserHeader user={user} />
       <StoryCircles stories={stories} />
 
       {/* ✅ Post Modal */}
