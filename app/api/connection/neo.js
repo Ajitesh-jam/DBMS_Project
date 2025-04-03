@@ -4,7 +4,7 @@ import { start } from "repl";
 const neo4j = require("neo4j-driver");
 
 const URI = process.env.URI;
-const USER = process.env.USERNAME;
+const USER = process.env.NEXT_PUBLIC_USERNAME;
 const PASSWORD = process.env.PASSWORD;
 
 const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
