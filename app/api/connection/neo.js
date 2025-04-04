@@ -1,11 +1,16 @@
-import { q } from "framer-motion/client";
-import { start } from "repl";
+// import { q } from "framer-motion/client";
+// import { start } from "repl";
 
 const neo4j = require("neo4j-driver");
 
-const URI = process.env.URI;
-const USER = process.env.NEXT_PUBLIC_USERNAME;
-const PASSWORD = process.env.PASSWORD;
+const URI = process.env.URI || "bolt://localhost:7687"; // Fallback to default URI
+const USER = process.env.NEXT_PUBLIC_USERNAME || "neo4j"; // Fallback to default username
+const PASSWORD = process.env.PASSWORD || "password"; // Fallback to default password
+
+if (!URI || !USER || !PASSWORD) {
+  console.log("error in connection");
+  throw new Error("Missing Neo4j connection details. Please check your environment variables.");
+}
 
 const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
 (async () => {
@@ -18,6 +23,12 @@ const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
     process.exit(1);
   }
 })();
+
+// Ensure the driver is not closed prematurely
+process.on("exit", () => {
+  driver.close();
+  console.log("Neo4j driver closed.");
+});
 
 export const getWholeGraph = async () => {
   const session = driver.session();
@@ -902,3 +913,21 @@ export const updateAdjacentNode = async (
   // Run query with params
   return await runQuery(query, params);
 }
+
+export const toNativeNumber = (value) => {
+  try {
+    if(typeof value === "number") {
+      return value; // Already a native number
+    }
+    if (typeof value === "string") {
+      return parseInt(value, 10); // Convert string to number
+    }
+    if (typeof value === "object" && value !== null) {
+      return value.low;
+    }
+    return 0; // Default value if conversion fails         
+  } catch (error) {
+    console.error("Error converting to native number:", error);
+    return 0;
+  }
+};
