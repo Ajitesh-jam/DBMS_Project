@@ -5,13 +5,15 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, useAnimation } from "framer-motion"
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react"
+import useUsers from "@/hooks/user.zustand";
 
 export default function PostCard({ post }) {
   const [liked, setLiked] = useState(false)
+  const user = useUsers((state) => state.selectedUser);
   const [likes, setLikes] = useState(post.likes)
   const [showComments, setShowComments] = useState(false)
   const [comment, setComment] = useState("")
-  const [comments, setComments] = useState(post.comments)
+  const [comments, setComments] = useState(post.comments || [])
   const controls = useAnimation()
   const cardRef = useRef(null)
 
@@ -50,15 +52,15 @@ export default function PostCard({ post }) {
     >
       <div className="p-4 flex items-center">
         <Image
-          src={post.user.avatar || "/placeholder.svg"}
-          alt={post.user.name}
+          src={user.imageUrl || "/placeholder.svg"}
+          alt = "/placeholder.svg"
           width={40}
           height={40}
           className="rounded-full"
         />
         <div className="ml-3">
-          <Link href={`/profile/${post.user.name}`} className="font-medium hover:underline ">
-            {post.user.name}
+          <Link href={`/profile/${post.properties?.name}`} className="font-medium hover:underline ">
+            {post.properties?.name}
           </Link>
         </div>
         <button className="ml-auto p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -68,8 +70,8 @@ export default function PostCard({ post }) {
 
       <div className="relative aspect-square">
         <Image
-          src={post.image || "/placeholder.svg"}
-          alt="Post"
+          src={post.adj?.properties?.imageUrl || "/placeholder.svg"}
+          alt = "/placeholder.svg"
           fill
           style={{ objectFit: "cover" }}
           onClick={() => setShowComments(!showComments)}
@@ -91,7 +93,7 @@ export default function PostCard({ post }) {
           <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-2">
             <MessageCircle className="h-6 w-6" />
           </button>
-          <span className="ml-1">{comments.length}</span>
+          <span className="ml-1">{}</span>
 
           <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-2">
             <Send className="h-6 w-6" />
@@ -104,12 +106,12 @@ export default function PostCard({ post }) {
 
         <div>
           <p className="mb-2">
-            <Link href={`/profile/${post.user.name}`} className="font-medium hover:underline">
-              {post.user.name}
+            <Link href={`/profile/${post.properties?.name}`} className="font-medium hover:underline">
+              {post.properties?.name}
             </Link>{" "}
-            {post.caption}
+            {}
           </p>
-          <p className="text-gray-500 text-sm">{post.timestamp}</p>
+          <p className="text-gray-500 text-sm">{}</p>
         </div>
 
         <AnimatePresence>
