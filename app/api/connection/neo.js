@@ -46,72 +46,7 @@ export const getWholeGraph = async () => {
   }
 };
 
-export const calculatePageRank = async () => {
-  const session = driver.session();
-  const dampingFactor = 0.85; // Damping factor (usually between 0.85 - 0.9)
-  const maxIterations = 20;  // Maximum number of iterations to avoid infinite loops
-  const threshold = 0.0001;  // Convergence threshold for stopping condition
 
-  try {
-    // Step 1: Get the total number of nodes in the graph
-    const result = await session.run('MATCH (n) RETURN count(n) AS totalNodes');
-    const totalNodes = result.records[0].get('totalNodes').toInt();
-    
-    // Step 2: Initialize PageRank for each node
-    await session.run('MATCH (n) SET n.pageRank = 1.0 / $totalNodes', { totalNodes });
-    
-    let iteration = 0;
-    let converged = false;
-    
-    while (iteration < maxIterations && !converged) {
-      iteration++;
-
-      // Step 3: Calculate the new PageRank for each node
-      const updateResult = await session.run(`
-        MATCH (n)
-        SET n.pageRank = (1 - $dampingFactor) / $totalNodes +
-                         $dampingFactor * SUM(
-                             CASE WHEN (m)-[:LINKS_TO]->(n) THEN m.pageRank / SIZE((m)-[:LINKS_TO]->()) ELSE 0 END
-                         )
-        RETURN n.pageRank AS newPageRank, n
-      `, { dampingFactor, totalNodes });
-
-      // Step 4: Check for convergence
-      const changes = updateResult.records.map((record) => {
-        const newPageRank = record.get('newPageRank').toNumber();
-        const oldPageRank = record.get('n').properties.pageRank;
-
-        // Check if the change is below the threshold (convergence condition)
-        return Math.abs(newPageRank - oldPageRank) < threshold;
-      });
-
-      // If all nodes have converged (i.e., the changes are below the threshold)
-      converged = changes.every((change) => change);
-      
-      // If convergence happens, break early
-      if (converged) {
-        console.log(`PageRank calculation converged in ${iteration} iterations.`);
-        break;
-      }
-      
-      console.log(`Iteration ${iteration} complete, continuing...`);
-    }
-
-    // Step 5: Fetch updated PageRank values for all nodes
-    const pageRankResult = await session.run('MATCH (n) RETURN n.name AS nodeName, n.pageRank AS pageRank');
-    const pageRankValues = pageRankResult.records.map((record) => ({
-      nodeName: record.get('nodeName'),
-      pageRank: record.get('pageRank').toNumber()
-    }));
-
-    return pageRankValues;
-  } catch (error) {
-    console.error('Error calculating PageRank:', error);
-    throw error;
-  } finally {
-    session.close();
-  }
-};
 
 
 async function runQuery(query, params = {}) {
@@ -931,3 +866,175 @@ export const toNativeNumber = (value) => {
     return 0;
   }
 };
+
+export const calculatePageRank = async () => {
+  const session = driver.session();
+  try {
+    // Check if the graph already exists
+    const checkGraphQuery = `CALL gds.graph.exists('myGraph') YIELD exists`;
+    const checkResult = await session.run(checkGraphQuery);
+    const graphExists = checkResult.records[0].get('exists');
+
+    // Drop the graph if it exists
+    if (graphExists) {
+      const dropGraphQuery = `CALL gds.graph.drop('myGraph')`;
+      await session.run(dropGraphQuery);
+    }
+
+    // Project the graph
+    const projectQuery = `
+      CALL gds.graph.project(
+        'myGraph',
+        'USER',
+        {
+          FOLLOWS: {
+            orientation: 'NATURAL'
+          }
+        }
+      )
+    `;
+    await session.run(projectQuery);
+
+    // Calculate PageRank
+    const pageRankQuery = `
+      CALL gds.pageRank.stream('myGraph')
+      YIELD nodeId, score
+      RETURN gds.util.asNode(nodeId) AS node, score
+      ORDER BY score DESC
+    `;
+    const result = await session.run(pageRankQuery);
+
+    // Save PageRank values to nodes
+    for (const record of result.records) {
+      const node = record.get('node');
+      const score = record.get('score');
+
+      const updateQuery = `
+        MATCH (n) WHERE id(n) = $nodeId
+        SET n.pagerank = $score
+      `;
+      await session.run(updateQuery, { nodeId: node.identity, score });
+    }
+
+    // Map results to an array of objects
+    return result.records.map((record) => ({
+      name: record.get('node').properties.name,
+      score: record.get('score')
+    }));
+  } catch (error) {
+    console.error("Error calculating PageRank:", error);
+    throw error;
+  } finally {
+    session.close();
+  }
+};
+
+// export const incrementalPageRank = async (newNodeId = null, newEdge = null) => {
+//   const session = driver.session();
+//   const dampingFactor = 0.85;
+//   const epsilon = 1e-4; // convergence threshold
+//   const maxIterations = 20;
+
+//   try {
+//     console.log('Starting incremental PageRank update...');
+
+//     if (newNodeId) {
+//       console.log(`New node detected: ${newNodeId}`);
+//       await session.run(`
+//         MATCH (n) WHERE id(n) = $nodeId
+//         SET n.pagerank = ${1 - dampingFactor}
+//       `, { nodeId: newNodeId });
+//       return [newNodeId];
+//     }
+
+//     let affectedNodes = new Set();
+
+//     if (newEdge) {
+//       const { sourceNodeId, targetNodeId } = newEdge;
+//       console.log(`New edge detected: ${sourceNodeId} -> ${targetNodeId}`);
+
+//       // Update affected nodes: source, target, and their neighbors
+//       const neighborsQuery = `
+//         MATCH (n)-[:FOLLOWS]->(m)
+//         WHERE id(n) IN [$sourceId, $targetId]
+//         RETURN DISTINCT id(n) AS id1, id(m) AS id2
+//       `;
+//       const result = await session.run(neighborsQuery, {
+//         sourceId: sourceNodeId,
+//         targetId: targetNodeId,
+//       });
+//       result.records.forEach((rec) => {
+//         //console.log(`Affected nodes: ${rec.get('id1').toInt()}, ${rec.get('id2').toInt()}`);
+//         affectedNodes.add(rec.get('id1').toInt());
+//         affectedNodes.add(rec.get('id2').toInt());
+//       });
+//     }
+//     console.log(`Affected nodes: ${Array.from(affectedNodes)}`);
+//     let converged = false;
+//     let iteration = 0;
+//     const nodePRMap = new Map();
+
+//     // Step 1: Fetch initial PR values
+//     const fetchQuery = `
+//       MATCH (n:USER)
+//       WHERE id(n) IN $nodeIds
+//       RETURN id(n) AS nodeId, n.pagerank AS pr
+//     `;
+//     const initialPRResult = await session.run(fetchQuery, { nodeIds: Array.from(affectedNodes) });
+//     //console.log(`Initial PageRank values fetched for ${initialPRResult.records.length} nodes.`);
+//     initialPRResult.records.forEach(rec => {
+//       console.log(`Initial PageRank for node ${rec.get('nodeId').toInt()}: ${rec.get('pr')}`);
+//       nodePRMap.set(rec.get('nodeId').toInt(), rec.get('pr'));
+//     });
+
+//     while (!converged && iteration < maxIterations) {
+//       converged = true;
+//       const updatedPRs = new Map();
+
+//       for (const nodeId of affectedNodes) {
+//         // Recalculate PR
+//         const prQuery = `
+//             MATCH (n) 
+//             WHERE id(n) = $nodeId
+//             MATCH (m)-[:FOLLOWS]->(n)
+//             return m.pagerank AS incomingPR
+//           `;
+
+//         const prResult = await session.run(prQuery, { nodeId });
+//         //console.log("incomingPR:",prResult);
+//         const incomingPR = prResult.records[0].get('incomingPR');
+//         console.log(`Incoming PR for node ${nodeId}: ${incomingPR}`);
+//         const newPR = (1 - dampingFactor) + dampingFactor * incomingPR;
+
+//         const oldPR = nodePRMap.get(nodeId) || 0;
+//         const diff = Math.abs(oldPR - newPR);
+
+//         if (diff > epsilon) {
+//           converged = false;
+//         }
+
+//         updatedPRs.set(nodeId, newPR);
+//       }
+
+//       // Apply new PRs and store them for next iteration
+//       for (const [nodeId, newPR] of updatedPRs) {
+//         await session.run(`MATCH (n) WHERE id(n) = $nodeId SET n.pagerank = $pr`, {
+//           nodeId,
+//           pr: newPR,
+//         });
+//         nodePRMap.set(nodeId, newPR);
+//       }
+
+//       iteration++;
+//       console.log(`Iteration ${iteration} completed.`);
+//     }
+
+//     console.log('Incremental PageRank update completed successfully.');
+//     return Array.from(affectedNodes);
+//   } catch (error) {
+//     console.error('Error during incremental PageRank update:', error);
+//     throw error;
+//   } finally {
+//     await session.close();
+//   }
+// };
