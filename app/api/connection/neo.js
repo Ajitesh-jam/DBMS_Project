@@ -318,6 +318,91 @@ export const getAdjacentNode = async (
   return await runQuery(query,params);
 };
 
+
+export const getAdjacentNodesOfAdjNode = async (
+  label,
+  where,
+  edgeLabel,
+  edgeWhere = {},
+  adjNodeLabel,
+  adjWhere = {},
+  AdjNodesofAdjNodeLabel ,
+  AdjNodesofAdjNodeEdgeLabel,
+  AdjNodesofAdjNodeEdgeWhere = {}
+) => {
+  let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m:${adjNodeLabel}) `;
+
+  // Handle node conditions (n)
+  const whereString = Object.entries(where)
+  .map(([key,value])=>
+      `n.${key} = $where_${key}`)
+  .join(" AND ");
+
+  const edgeWhereString = Object.entries(edgeWhere)
+  .map(([key,value])=>
+      `e.${key} = $edgeWhere_${key}`)
+  .join(" AND ");
+
+  const adjWhereString = Object.entries(adjWhere)
+  .map(([key,value])=>
+      `m.${key} = $adjWhere_${key}`)
+  .join(" AND ");
+
+  const adjNodeNodeWhereString = Object.entries(AdjNodesofAdjNodeEdgeWhere)
+  .map(([key,value])=>
+      `m.${key} = $adjWhere_${key}`)
+  .join(" AND ");
+
+  console.log("WHERE conditions:", whereString);
+  if(whereString || adjWhereString || edgeWhereString)
+    query += " WHERE ";
+  if (whereString) query += whereString;
+  if (whereString && edgeWhereString) query += " AND ";
+  if (edgeWhereString) query += edgeWhereString;
+  if (whereString && adjWhereString) query += " AND ";
+  if (adjWhereString) query += adjWhereString;
+
+  const params = {
+    ...Object.fromEntries(
+      Object.entries(where).map(([key, value]) => [`where_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(edgeWhere).map(([key, value]) => [`edgeWhere_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(adjWhere).map(([key, value]) => [`adjWhere_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(AdjNodesofAdjNodeEdgeWhere).map(([key, value]) => [`adjWhere_${key}`, value])
+    )
+        
+    
+  };
+  // Append WHERE clause correctly
+  if (AdjNodesofAdjNodeLabel) {
+    query += ` OPTIONAL MATCH (m)-[r:${AdjNodesofAdjNodeEdgeLabel}]->(adj:${AdjNodesofAdjNodeLabel})`;
+
+    const adjEdgeConditions = Object.entries(AdjNodesofAdjNodeEdgeWhere).map(
+      ([key, value]) => `r.${key} = $adjEdgeWhere_${key}`
+    );
+
+    if (adjEdgeConditions.length > 0) {
+      query += ` WHERE ${adjEdgeConditions.join(' AND ')}`;
+    }
+
+    query += ` RETURN adj`;
+  } else {
+    query += ` RETURN m`;
+  }
+  
+
+  console.log("Final Cypher Query:", query);
+  console.log("Final Cypher params:", params);
+
+
+  return await runQuery(query,params);
+};
+
 export const createNode = async (labels, properties) => {
   // Convert labels into a string format
   const labelString = labels.join(":"); // Example: ["Person", "Employee"] → "Person:Employee"
