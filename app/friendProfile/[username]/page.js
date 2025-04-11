@@ -10,8 +10,10 @@ import useFriends from "@/hooks/friend.zustand";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import useUsers from "@/hooks/user.zustand";
+import { use } from "react";
 
-export default function FriendProfilePage({ activeUserId }) {
+export default function FriendProfilePage({ params }) {
+  const { username } = use(params);
   const [activeTab, setActiveTab] = useState("posts");
   const [posts, setPosts] = useState([]);
   const Friend = useFriends((state) => state.selectedFriend);
@@ -26,6 +28,35 @@ export default function FriendProfilePage({ activeUserId }) {
 
 
   useEffect(() => {
+
+    async function fetchFriend() {
+      try {
+        const response = await fetch("/api/getNodeByLabel", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: ["USER"],
+            where: { name: username },
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("Error fetching friend data.");
+        }
+        const data = await response.json();
+        console.log("Friend data:", data);
+        if (data.length) {
+          const friendData = data[0].properties;
+          console.log("Friend data properties:", friendData);
+          setFriendData(friendData);
+        }
+      } catch (error) {
+        console.error("Error loading friend data:", error);
+      }
+    }
+
+
     async function checkFollowRequest() {
       try {
         const response = await fetch("/api/getStartAdjNodeByLabel", {
@@ -55,18 +86,18 @@ export default function FriendProfilePage({ activeUserId }) {
           console.log("Result is perfect!!");
 
 
-          setShowPopup(true);
+         
           setFollowRequestProps(result.properties);
         }
       } catch (error) {
         console.error("Error checking follow request:", error);
       }
     }
-
+    fetchFriend();
     if (Friend.name) {
       checkFollowRequest();
     }
-  }, [Friend.name, activeUserId]);
+  }, [username, Friend]);
 
   
   useEffect(() => {
@@ -127,7 +158,6 @@ export default function FriendProfilePage({ activeUserId }) {
     }
   }, [Friend]);
 
-  // ✅ Mock stories data
   const stories = [
     { id: 1, image: "/placeholder.svg?height=80&width=80", title: "Travel" },
     { id: 2, image: "/placeholder.svg?height=80&width=80", title: "Food" },

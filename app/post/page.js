@@ -25,18 +25,18 @@ export default function CreatePost() {
   }
   const user= useUsers((state)=> (state.selectedUser))
  
-  // Handle Image Load Success
+
   const handleImageLoad = () => {
     setIsLoading(false)
   }
 
-  // Handle Image Load Error
+
   const handleImageError = () => {
     setIsLoading(false)
     setIsValidImage(false)
   }
 
-  // Load Image Preview
+
   const loadImage = () => {
     if (imageUrl) {
       setIsLoading(true)
@@ -62,6 +62,16 @@ export default function CreatePost() {
   }
 
   async function handleSubmit() {
+
+    if(user.name==="Dummy User" || user.name==="") {
+      alert("Please login to create a post")
+      return
+    }
+    if(!imageUrl) {
+      alert("Please Give image")
+      return
+    }
+      
     // Handle form submission logic here
     console.log("Image URL:", imageUrl)
     console.log("Description:", description)
@@ -107,7 +117,7 @@ export default function CreatePost() {
       console.log("New Post Name:", newPostName);
 
 
-    const createResponse = await fetch("/api/createAdjacentNode", {
+    await fetch("/api/createAdjacentNode", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -117,7 +127,7 @@ export default function CreatePost() {
         startNodeWhere: {"name": user.name,"email": user.email},
         endNodeLabel: ["POST"],
         endNodeWhere: {"name": newPostName,"imageUrl": imageUrl,"description": description,
-          "location": location},
+          "location": location , postedBy: user.name},
         edgeLabel: "POSTED_BY",
         properties: {
         },
@@ -157,7 +167,8 @@ export default function CreatePost() {
         </Button>
       </div>
 
-      {/* Main content */}
+      {
+        user.name!=="Dummy User" ? (
       <div className="flex flex-1 overflow-hidden">
         {/* Image preview area */}
         <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
@@ -220,7 +231,7 @@ export default function CreatePost() {
               <AvatarImage src="/placeholder.svg?height=32&width=32" />
               <AvatarFallback>UN</AvatarFallback>
             </Avatar>
-            <span className="font-semibold">saraswagh</span>
+            <span className="font-semibold">{user.name} </span>
           </div>
 
           {/* Description */}
@@ -254,6 +265,19 @@ export default function CreatePost() {
           )}
         </div>
       </div>
+        ):
+        (
+          <div className="flex flex-1 items-center justify-center">
+          <h1 className="text-lg font-semibold">Please login to create a post</h1>
+          <Link href="/login" className="text-blue-500 font-semibold ml-2">
+            Login
+          </Link>
+        </div>
+        )
+      }
+
+
+
     </div>
   )
 }

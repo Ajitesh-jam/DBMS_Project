@@ -6,7 +6,6 @@ import { SearchIcon, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import UserSearchResults from "@/components/user-search-results"
-import useFriends from "@/hooks/friend.zustand"
 import { debounce } from "@/lib/utils"
 
 export default function SearchPage() {
@@ -17,7 +16,7 @@ export default function SearchPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null)
 
-  const setNewFriend = useFriends((state) => state.setNewFriend);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,7 +25,7 @@ export default function SearchPage() {
       [name]: value,
     }));
   };
-  // ✅ Mock data for fallback               
+           
   const getMockUsers = (term) => [
     {
       id: 1,
@@ -65,7 +64,7 @@ export default function SearchPage() {
     },
   ]
 
-  // ✅ Fetch users from API
+
   const fetchUsers = async (term) => {
     if (!term || term.trim() === "") {
       setSearchResults([])
@@ -101,12 +100,12 @@ export default function SearchPage() {
         setSearchResults(getMockUsers(term)) // Fallback to mock data
       } else {
         setSearchResults(data)
-        setNewFriend(user);
+        
       setIsSuccess(true);
 
       // Redirect to profile after success
       setTimeout(() => {
-        router.push("/friendProfile");
+        router.push("/friendProfile/" + user.name);
       }, 1500);
       }
     } catch (err) {
@@ -118,7 +117,7 @@ export default function SearchPage() {
     }
   }
 
-  // ✅ Debounce the search function
+
   const debouncedSearch = useCallback(
     debounce((term) => {
       fetchUsers(term)
@@ -126,7 +125,6 @@ export default function SearchPage() {
     [],
   )
 
-  // ✅ Trigger search when searchTerm changes
   useEffect(() => {
     debouncedSearch(searchTerm)
 

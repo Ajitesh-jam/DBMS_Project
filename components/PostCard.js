@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useAnimation } from "framer-motion"
@@ -20,35 +20,181 @@ export default function PostCard({ post }) {
   const handleLike = () => {
     if (liked) {
       setLikes(likes - 1)
+
+
+      fetch("/api/deleteEdge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:
+          JSON.stringify({
+            startNodeLabel: "USER",
+            startNodeWhere: { name: user.name },
+            endNodeLabel: "POST",
+            endNodeWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+            edgeLabel: "LIKED",
+            properties: {},
+          }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Likes updated successfully:", data)
+      })
+      .catch((error) => {
+        console.error("Error updating likes:", error)
+      })
+
       
-    } else {
+    } 
+    else {
       setLikes(likes + 1)
       controls.start({
         scale: [1, 12, 1],
         transition: { duration: 0.3 },
       })
-    }
-    setLiked(!liked)
+
+
+      fetch("/api/createEdge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:
+          JSON.stringify({
+            startNodeLabel: ["USER"],
+            startNodeWhere: { name: user.name },
+            endNodeLabel: ["POST"],
+            endNodeWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+            edgeLabel: "LIKED",
+            properties: {},
+          }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Likes updated successfully:", data)
+      })
+      .catch((error) => {
+        console.error("Error updating likes:", error)
+      })
+
+    }  
+    setLiked(!liked)   
   }
 
   const handleAddComment = (e) => {
     e.preventDefault()
     if (comment.trim()) {
-      setComments([...comments, { user: "you", text: comment }])
+      setComments([...comments, { user: user.name, text: comment }])
       setComment("")
+
+      fetch("/api/createEdge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:
+          JSON.stringify({
+            startNodeLabel: ["USER"],
+            startNodeWhere: { name: user.name },
+            endNodeLabel: ["POST"],
+            endNodeWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+            edgeLabel: "COMMENT",
+            properties: {
+              comment: comment,
+              postedBy: user.name,
+              postedTo: post.adj?.properties?.postedBy,
+              postedAt: new Date().toISOString(),
+
+            },
+          }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("comment updated successfully:", data)
+      })
+      .catch((error) => {
+        console.error("Error updating comement:", error)
+      })
     }
   }
+
+  useEffect(() => {
+
+    console.log("Post card : ", post);
+    //fetch if the post is liked 
+    fetch("/api/checkEdge", {
+      method: "POST",
+      headers: {
+      "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+      label: "USER",
+      where: { name: user.name },
+      adjNodeLabel: "POST",
+      adjWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+      edgeLabel: "LIKED",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+      console.log("Edge exists for post :", data, post);
+      setLiked(data.edgeExists);
+      })
+      .catch((error) => {
+      console.error("Error checking edge existence:", error);
+      });
+      
+      
+      fetch("/api/getEdgesOfNodeByLabel", {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+        label: "USER",
+        where: { name: user.name },
+        edgeLabel: "COMMENT",
+        edgeWhere:{postedBy: post.adj?.properties?.postedBy}      // YEH KAAM NHI KARA HAI----------------------------------------------------------------------------------------------------------------------------------
+
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+
+          console.log("Comment by :", data, post);
+          data.forEach((comment) => {
+            console.log("comment", comment);
+            
+              setComments((prevComments) => [
+                ...prevComments,
+                { user: comment.e.properties?.postedBy, text: comment.e.properties?.comment },
+              ]);
+          }
+          );
+        })
+        .catch((error) => {
+        console.error("Error checking edge existence:", error);
+        });
+  },[]);
 
   return (
     <motion.div
       ref={cardRef}
-      className="bg-white dark:bg-red-900 rounded-lg shadow-md overflow-hidden"
+      className="bg-black dark:bg-red-900 rounded-lg shadow-md overflow-hidden"
       whileHover={{
         y: -10,
         boxShadow: "0 20px 25px -5px rgba(47, 30, 201, 0.1), 0 10px 10px -5px rgba(15, 27, 158, 0.04)",
       }}
       transition={{ duration: 0.2 }}
-      style={{color:'black'}}
+
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      style={{ border: "1px solid cyan", borderRadius: "8px" }}
     >
       <div className="p-4 flex items-center">
         <Image
@@ -59,8 +205,8 @@ export default function PostCard({ post }) {
           className="rounded-full"
         />
         <div className="ml-3">
-          <Link href={`/profile/${post.properties?.name}`} className="font-medium hover:underline ">
-            {post.properties?.name}
+          <Link href={`/friendProfile/${post.adj?.properties?.postedBy}`} className="font-medium hover:underline ">
+            {post.adj?.properties?.postedBy}
           </Link>
         </div>
         <button className="ml-auto p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -88,7 +234,7 @@ export default function PostCard({ post }) {
           >
             <Heart className={`h-6 w-6 ${liked ? "fill-current" : ""}`} />
           </motion.button>
-          <span className="ml-1 font-medium">{likes}</span>
+
 
           <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-2">
             <MessageCircle className="h-6 w-6" />
@@ -116,6 +262,10 @@ export default function PostCard({ post }) {
 
         <AnimatePresence>
           {showComments && (
+
+
+            <>
+            
             <motion.div
               className="mt-4 border-t pt-4"
               initial={{ opacity: 0, height: 0 }}
@@ -148,6 +298,8 @@ export default function PostCard({ post }) {
                 </button>
               </form>
             </motion.div>
+
+            </>
           )}
         </AnimatePresence>
       </div>

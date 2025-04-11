@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Instagram, Twitter, Facebook, Youtube, Mail } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 export default function Footer() {
   const footerVariants = {
@@ -24,11 +25,12 @@ export default function Footer() {
 
   return (
     <motion.footer
-      className="bg-gray-100 dark:bg-gray-900 py-12"
+      className="bg-white-100 dark:bg-white-900 py-12  boarder-t border-cyan-200 dark:border-cyan-800" 
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
       variants={footerVariants}
+      style={{ border: "1px solid cyan", borderRadius: "8px" }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -149,11 +151,12 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">Subscribe to our newsletter for updates</p>
             <div className="flex">
-              <input
+              {/* <input
                 type="email"
                 placeholder="Your email"
                 className="flex-1 px-4 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800"
-              />
+              /> */}
+              <Input></Input>
               <button className="bg-gradient-to-r from-pink-500 to-violet-500 text-white px-4 py-2 rounded-r-md">
                 <Mail className="h-5 w-5" />
               </button>

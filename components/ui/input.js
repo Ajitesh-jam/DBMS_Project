@@ -17,7 +17,11 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
       <motion.input
         type={type}
         className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
+          "flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background transition-all duration-200",
+          "bg-white border-black-400 text-pink-400 placeholder:text-black-300",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black-400 focus-visible:ring-offset-2",
+          "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+          "disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         ref={ref}
@@ -31,7 +35,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
       />
       {isFocused && (
         <motion.span
-          className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-500"
+          className="absolute bottom-0 left-0 h-0.5 bg-pink-400"
           initial={{ width: 0 }}
           animate={{ width: "100%" }}
           transition={{ duration: 0.3 }}

@@ -476,11 +476,11 @@ export const createEdge = async (
   properties = {}
 ) => {
   try {
-    // ✅ Convert labels into a string format
+    
     const startLabelString = startNodeLabel.join(":");
     const endLabelString = endNodeLabel.join(":");
 
-    // ✅ Convert properties into a Cypher-compatible key-value string
+    
     const propsString = Object.entries(properties)
       .map(([key, value]) => {
         if (typeof value === "string") return `${key}: "${value}"`;
@@ -490,7 +490,7 @@ export const createEdge = async (
       .filter(Boolean)
       .join(", ");
 
-    // ✅ Construct WHERE clauses for start and end nodes
+    
     const startWhereString = Object.keys(startNodeWhere)
       .map((k) => `n.${k} = $start_${k}`)
       .join(" AND ");
@@ -499,30 +499,30 @@ export const createEdge = async (
       .map((k) => `m.${k} = $end_${k}`)
       .join(" AND ");
 
-    // ✅ Final Cypher query with proper conditions
+
     let query = `
       MATCH (n:${startLabelString}), (m:${endLabelString})
     `;
 
-    // ✅ Add WHERE clause only if there are conditions
+
     if (startWhereString || endWhereString) {
       query += `
       WHERE ${[startWhereString, endWhereString].filter(Boolean).join(" AND ")}
       `;
     }
 
-    // ✅ Handle properties dynamically in MERGE
+
     query += `
       MERGE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
       RETURN e
     `;
 
-    console.log("✅ Final Cypher Query:", query);
-    console.log("📚 Properties:", properties);
-    console.log("🔎 Start Node Where:", startNodeWhere);
-    console.log("🔎 End Node Where:", endNodeWhere);
+    console.log("Final Cypher Query:", query);
+    console.log("Properties:", properties);
+    console.log("Start Node Where:", startNodeWhere);
+    console.log("End Node Where:", endNodeWhere);
 
-    // ✅ Prepare query parameters
+  
     const params = {
       ...Object.fromEntries(
         Object.entries(startNodeWhere).map(([k, v]) => [`start_${k}`, v])

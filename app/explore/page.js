@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import Image from "next/image";
-
+import { Input } from "@/components/ui/input";
 export default function Explore() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,17 +18,23 @@ export default function Explore() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Generate 20 random posts
-      const generatedPosts = Array.from({ length: 20 }, (_, i) => ({
-        id: i + 1,
-        image: `/placeholder.svg?height=${
-          300 + Math.floor(Math.random() * 200)
-        }&width=${300 + Math.floor(Math.random() * 200)}`,
-        likes: Math.floor(Math.random() * 1000),
-        comments: Math.floor(Math.random() * 50),
-        tags: ["nature", "travel", "photography", "food", "fashion", "art"]
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 3),
-      }));
+      const generatedPosts = Array.from({ length: 20 }, (_, i) => {
+        const randomWidth = Math.floor(Math.random() * (500 - 300 + 1)) + 300; // Random width between 300 and 500
+        const randomHeight = Math.floor(Math.random() * (500 - 300 + 1)) + 300; // Random height between 300 and 500
+        return {
+          id: i + 1,
+          image: {
+            src: `/placeholder.svg`,
+            width: randomWidth,
+            height: randomHeight,
+          },
+          likes: Math.floor(Math.random() * 1000),
+          comments: Math.floor(Math.random() * 50),
+          tags: ["nature", "travel", "photography", "food", "fashion", "art"]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3),
+        };
+      });
 
       setPosts(generatedPosts);
       setLoading(false);
@@ -53,13 +59,21 @@ export default function Explore() {
       >
         <h1 className="text-3xl font-bold mb-6">Explore</h1>
         <div className="relative">
-          <input
+          {/* <input
             type="text"
             placeholder="Search by tags..."
             className="w-full p-3 pl-12 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          /> */}
+          <Input
+            type="text"
+            placeholder="Search by tags..."
+            className="w-full p-3 pl-12 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            ></Input>
+
           <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
         </div>
       </motion.div>
@@ -84,7 +98,9 @@ export default function Explore() {
               className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+                src={post.image.src || "/placeholder.svg"}
+                width={post.image.width}
+                height={post.image.height}
               whileHover={{ scale: 1.03 }}
             >
               <Image

@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, Bell, Menu, X, LogIn, UserPlus } from "lucide-react"
+import useUser from "@/hooks/user.zustand"
 
+import { Button } from "@/components/ui/button"
 export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -16,12 +18,28 @@ export default function Navbar() {
     { id: 3, text: "David started following you", time: "1h ago" },
   ]
 
+  const user = useUser((state) => state.selectedUser)
+  const logout = useUser((state) => state.removeUser)
+  useEffect(() => {
+    console.log("User in Navbar:", user)
+  } , [])
+
+  // async function logout(){
+  //   console.log("Logging out...")
+  //   logout()
+    
+  //   console.log("Logged out")
+
+  // }
+  
+
   return (
     <motion.nav
-      className="sticky top-0 z-50 bg-white dark:bg-white border-b border-white-200 dark:border-white-800"
+      className="sticky top-0 z-50 bg-black dark:bg-black border-b border-black-200 dark:border-black-800"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
+      style={{  border: "1px solid cyan", borderRadius: "8px" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -100,6 +118,41 @@ export default function Navbar() {
               </AnimatePresence>
             </motion.div>
 
+
+            {
+              user.name!=="Dummy User" ? (
+                <>
+                
+                
+               
+                <motion.div className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link href={`/profile`}>
+                    <img
+                      src={user.imageUrl || "/placeholder.svg"}
+                      alt={user.name}
+                      className="h-10 w-10 rounded-full border border-gray-300 dark:border-gray-700"
+                    />
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}> </motion.div>
+                  </Link>
+
+                </motion.div>
+                   <Button onClick={()=> {
+                    console.log("Logging out...")
+                    logout()
+                    console.log("Logged out")
+                    window.location.href = "/"
+                    
+                    }} className="ml-4 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600">
+
+
+                    Log Out
+                   </Button>
+                </>
+
+              )
+              :
+              (
+                <>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href="/login"
@@ -119,6 +172,10 @@ export default function Navbar() {
                 Sign Up
               </Link>
             </motion.div>
+                </>
+              )
+            }
+
           </div>
 
           <div className="flex md:hidden">

@@ -6,6 +6,7 @@ import HeroSlider from "@/components/HeroSlider";
 import PostCard from "@/components/PostCard";
 import useUsers from "@/hooks/user.zustand";
 
+
 export default function Home() {
   const controls = useAnimation();
   const user = useUsers((state) => state.selectedUser);
@@ -20,10 +21,13 @@ export default function Home() {
     }
   }, [controls, inView]);
 
-  // 🔽 Fetch posts of your friend (e.g. "saras") here
+
   useEffect(() => {
     async function fetchFriendPosts() {
       try {
+
+
+
         const response = await fetch("/api/getAdjNodesofAdjNode", {
           method: "POST",
           headers: {
@@ -61,6 +65,7 @@ export default function Home() {
 return (
   <div className="w-full">
     <HeroSlider />
+
 
     <section className="max-w-4xl mx-auto px-4 py-12">
       <motion.h2
