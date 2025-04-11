@@ -260,6 +260,48 @@ export const getStartAdjacentNode = async (
   return await runQuery(query,params);
 };
 
+export const checkEdge= async (
+  label,
+  where,
+  edgeLabel,
+  edgeWhere = {},
+  adjNodeLabel,
+  adjWhere = {}
+) => {
+  let query = `MATCH (n:${label}) -[e:${edgeLabel}]-> (m:${adjNodeLabel}) `;
+
+  const whereString = Object.entries(where)
+    .map(([key, value]) => `n.${key} = $where_${key}`)
+    .join(" AND ");
+
+  const edgeWhereString = Object.entries(edgeWhere)
+    .map(([key, value]) => `e.${key} = $edgeWhere_${key}`)
+    .join(" AND ");
+
+  const adjWhereString = Object.entries(adjWhere)
+    .map(([key, value]) => `m.${key} = $adjWhere_${key}`)
+    .join(" AND ");
+
+  const conditions = [whereString, edgeWhereString, adjWhereString].filter(Boolean);
+  if (conditions.length > 0) {
+    query += "WHERE " + conditions.join(" AND ") + " ";
+  }
+
+  query += "RETURN COUNT(e) > 0 AS edgeExists";
+
+  const params = {
+    ...Object.fromEntries(Object.entries(where).map(([k, v]) => [`where_${k}`, v])),
+    ...Object.fromEntries(Object.entries(edgeWhere).map(([k, v]) => [`edgeWhere_${k}`, v])),
+    ...Object.fromEntries(Object.entries(adjWhere).map(([k, v]) => [`adjWhere_${k}`, v])),
+  };
+
+  console.log("Final Cypher Query of check edge:", query);
+  console.log("Final Cypher Params:", params);
+
+  return await runQuery(query, params);
+};
+
+
 export const getAdjacentNode = async (
   label,
   where,

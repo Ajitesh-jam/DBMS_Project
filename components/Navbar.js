@@ -18,7 +18,7 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800"
+      className="sticky top-0 z-50 bg-white dark:bg-white border-b border-white-200 dark:border-white-800"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
@@ -29,7 +29,7 @@ export default function Navbar() {
             <Link href="/" className="flex-shrink-0 flex items-center">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-violet-500 text-transparent bg-clip-text">
-                  MALAV
+                  MALAVvV
                 </span>
               </motion.div>
             </Link>

@@ -4,29 +4,20 @@ import { Button } from "@/components/ui/button"
 import { MessageSquare, UserPlus, UserCheck } from "lucide-react"
 import { useState, useEffect } from "react"
 import useUsers from "@/hooks/user.zustand"
+import useFriends from "@/hooks/friend.zustand"
 import { useRouter } from "next/navigation"
 
-export default function FriendHeader({ Friend, activeUserId }) {
+export default function FriendHeader({ Friend, user }) {
   const [requestStatus, setRequestStatus] = useState("none") // 'none', 'requested', 'following'
   const [isLoading, setIsLoading] = useState(false)
-  const user = useUsers((state) => state.selectedUser)
+  // const user = useUsers((state) => state.selectedUser);
+  // const Friend = useFriends((state) => state.selectedFriend);
   const router = useRouter()
-  // Function to persist follow state to localStorage
-  const saveRequestState = (friendId, status) => {
-    localStorage.setItem(`request_${friendId}`, status)
-  }
-
-  const getRequestState = (friendId) => {
-    return localStorage.getItem(`request_${friendId}`) || "none"
-  }
-
-  // ✅ API call to create FOLLOW_REQUESTED edge
+  
   const createFollowRequest = async () => {
     try {
       setIsLoading(true)
-      console.log("Active User ID:", activeUserId)
-      console.log("Friend ID:", Friend.id)
-
+      
       const response = await fetch("/api/createEdge", {
         method: "POST",
         headers: {
@@ -51,7 +42,7 @@ export default function FriendHeader({ Friend, activeUserId }) {
 
       // Update to requested state and persist
       setRequestStatus("requested")
-      saveRequestState(Friend.id, "requested")
+
     } catch (err) {
       console.error("Error sending follow request:", err)
     } finally {
@@ -59,13 +50,12 @@ export default function FriendHeader({ Friend, activeUserId }) {
     }
   }
 
-  // ❌ API call to delete FOLLOW_REQUESTED edge
   const deleteFollowRequest = async () => {
+    if(user.name==="Dummy User" || Friend==="Dummy Friend" || requestStatus=="none") return;
     try {
       setIsLoading(true)
       console.log("Deleting Follow Request...")
-      console.log("Active User ID:", activeUserId)
-      console.log("Friend ID:", Friend.id)
+
 
       const response = await fetch("/api/deleteEdge", {
         method: "POST",
@@ -77,7 +67,7 @@ export default function FriendHeader({ Friend, activeUserId }) {
           startNodeWhere: { name: user.name }, // Active user's name
           endNodeLabel: ["USER"], // User receiving the request
           endNodeWhere: { name: Friend.name },
-          edgeLabel: "FOLLOW_REQUESTED",
+          edgeLabel: (requestStatus=="following")?   "FOLLOWS": "FOLLOW_REQUESTED",
         }),
       })
 
@@ -90,7 +80,6 @@ export default function FriendHeader({ Friend, activeUserId }) {
 
       // Reset to none state and update localStorage
       setRequestStatus("none")
-      saveRequestState(Friend.id, "none")
     } catch (err) {
       console.error("Error deleting follow request:", err)
     } finally {
@@ -98,47 +87,100 @@ export default function FriendHeader({ Friend, activeUserId }) {
     }
   }
 
-  // 🔄 Toggle follow/unfollow logic
+
   const toggleFollow = () => {
+    if(user.name==="Dummy User" || Friend==="Dummy Friend") return;
+    console.log("Toggling follow status for:", requestStatus)
     if (requestStatus === "none") {
+      console.log("Sending follow request...")
       createFollowRequest() // Will set to Requested
-    } else if (requestStatus === "requested") {
-      deleteFollowRequest() // Will revert to Send Request
-    }
+    } else 
+
+      deleteFollowRequest() 
+    
   }
 
-  // Load follow state from localStorage on component mount
+  
   useEffect(() => {
+
+
+
     // Load request state from localStorage on component mount
-    const initialRequestState = getRequestState(Friend.id)
-    setRequestStatus(initialRequestState)
+    // const initialRequestState = getRequestState(Friend.id)
+    // setRequestStatus(initialRequestState)
 
     // Here you could also add an API call to check if there's an existing FOLLOWS edge
     // and update the state accordingly
     const checkExistingRelationship = async () => {
       try {
         // Example API call to check for existing relationships
-        const response = await fetch(`/api/checkEdge?from=${user.name}&to=${Friend.name}`)
+        
+
+        if(user.name==="Dummy User" || Friend==="Dummy Friend") return;
+
+
+        const response = await fetch("/api/checkEdge", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: "USER",
+            where:{name: user.name},
+            edgeLabel: "FOLLOWS",
+            edgeWhere: {},
+            adjNodeLabel: "USER",
+            adjWhere: { name: Friend.name }
+            
+          }),
+        }); 
+
+        console.log("Response from checkEdge:", response)
         if (response.ok) {
-          const data = await response.json()
-          if (data.hasFollowEdge) {
+          const data = await response.json();
+          console.log("Data from checkEdge:", data)
+        
+          if (data.edgeExists) {
             setRequestStatus("following")
-            saveRequestState(Friend.id, "following")
-          } else if (data.hasRequestEdge) {
-            setRequestStatus("requested")
-            saveRequestState(Friend.id, "requested")
+
+          } else  {
+            const response = await fetch("/api/checkEdge", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                label: "USER",
+                where:{name: user.name},
+                edgeLabel: "FOLLOW_REQUESTED",
+                edgeWhere: {},
+                adjNodeLabel: "USER",
+                adjWhere: { name: Friend.name }
+                
+              }),
+            }); 
+         
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Data from checkEdge:", data)
+            
+              if (data.edgeExists) {
+                setRequestStatus("requested")
+              } 
+            }
+
           }
         }
       } catch (err) {
         console.error("Error checking relationship:", err)
       }
     }
+    checkExistingRelationship();
 
-    // Uncomment this when you have the API endpoint ready
-    // checkExistingRelationship();
 
-    console.log("Friend in header:", Friend)
-  }, [Friend.id, user.name])
+
+    console.log("Friend in header :", Friend)
+  }, [user,Friend])
 
   return (
     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">

@@ -112,7 +112,8 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.length === 0) {
-        alert("Invalid credentials. Please try again.");
+        alert("No User Found");
+        return;
       }
 
       const user = data[0].n.properties;
@@ -138,8 +139,8 @@ export default function LoginPage() {
         router.push("/profile");
       }, 1500);
     } catch (error) {
-      console.error("Login error:", error);
-      setError(error.message || "Invalid credentials. Please try again.");
+      //console.error("Login error:", error);
+      setError( "Invalid credentials. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

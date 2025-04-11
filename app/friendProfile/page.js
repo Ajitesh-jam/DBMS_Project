@@ -16,17 +16,15 @@ export default function FriendProfilePage({ activeUserId }) {
   const [posts, setPosts] = useState([]);
   const Friend = useFriends((state) => state.selectedFriend);
   const user = useUsers((state) => state.selectedUser);
-  // ✅ State to manage FriendData and popup
+
   const [FriendData, setFriendData] = useState({
     ...Friend,
     followers: 0,
     following: 0,
     posts: 0,
   });
-  const [showPopup, setShowPopup] = useState(false);
-  const [followRequestProps, setFollowRequestProps] = useState({});
 
-  // ✅ Check if FOLLOW_REQUESTED edge exists
+
   useEffect(() => {
     async function checkFollowRequest() {
       try {
@@ -70,56 +68,7 @@ export default function FriendProfilePage({ activeUserId }) {
     }
   }, [Friend.name, activeUserId]);
 
-  // ✅ Accept Invitation: Delete FOLLOW_REQUESTED and create FOLLOWS
-  const acceptInvitation = async () => {
-    try {
-      // 1. Delete FOLLOW_REQUESTED edge
-      const deleteResponse = await fetch("/api/deleteEdge", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          startNodeLabel: ["USER"],
-          startNodeWhere: { name: Friend.name },
-          endNodeLabel: ["USER"],
-          endNodeWhere: { name: user.name },
-          edgeLabel: "FOLLOW_REQUESTED",
-        }),
-      });
-
-      if (!deleteResponse.ok) {
-        throw new Error("Error deleting follow request!");
-      }
-
-      // 2. Create FOLLOWS edge with same properties
-      const createResponse = await fetch("/api/createEdge", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          startNodeLabel: ["USER"],
-          startNodeWhere: { name: Friend.name },
-          endNodeLabel: ["USER"],
-          endNodeWhere: { name: user.name },
-          edgeLabel: "FOLLOWS",
-          properties: followRequestProps,
-        }),
-      });
-
-      if (!createResponse.ok) {
-        throw new Error("Error creating follow edge!");
-      }
-
-      console.log("Follow request accepted successfully!");
-      setShowPopup(false);
-    } catch (error) { 
-      console.error("Error accepting invitation:", error);
-    }
-  };
-
-  // ✅ Fetch posts and update FriendData dynamically
+  
   useEffect(() => {
     async function fetchPosts() {
       try {
@@ -189,60 +138,9 @@ export default function FriendProfilePage({ activeUserId }) {
 
   return (
     <main className="container max-w-4xl mx-auto px-4 py-8">
-      {/* ✅ Accept Invitation Popup */}
-      {showPopup && (
-        <Dialog open={showPopup} onOpenChange={setShowPopup}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle ><p className="text-black">Follow Request</p></DialogTitle>
-              <p className="text-black">{Friend.name} has sent you a follow request.</p>
-            </DialogHeader>
-            <DialogFooter>
-              <Button onClick={acceptInvitation} className="bg-green-500 text-white">
-                Approve
-              </Button>
-              <Button
-                onClick={async () => {
-                  try {
-                    const response = await fetch("/api/deleteEdge", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        startNodeLabel: ["USER"],
-                        startNodeWhere: { name: Friend.name }, // Friend sending the request
-                        endNodeLabel: ["USER"],
-                        endNodeWhere: { id: activeUserId }, // Active user (logged in user)
-                        edgeLabel: "FOLLOW_REQUESTED",
-                      }),
-                    });
-
-                    if (!response.ok) {
-                      throw new Error("Error deleting follow request!");
-                    }
-
-                    console.log("Follow request rejected successfully!");
-                    setShowPopup(false); // Close popup after rejecting
-                  } catch (error) {
-                    console.error("Error rejecting follow request:", error);
-                  }
-                }}
-                className="bg-gray-300 text-black"
-              >
-                Reject
-              </Button>
-
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* FriendHeader with updated FriendData */}
-      <FriendHeader Friend={FriendData} activeUserId={activeUserId} />
-
-      {/* Story Circles */}
-      <StoryCircles stories={stories} />
+     
+     
+      <FriendHeader Friend={Friend} user={user} />
 
       {/* Tabs for Posts and Reels */}
       <Tabs defaultValue="posts" className="mt-8" onValueChange={setActiveTab}>
