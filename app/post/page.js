@@ -62,17 +62,7 @@ export default function CreatePost() {
     }
   }
 
-  async function handleSubmit() {
-
-    if(user.name==="Dummy User" || user.name==="") {
-      alert("Please login to create a post")
-      return
-    }
-    if(!imageUrl) {
-      alert("Please Give image")
-      return
-    }
-      
+  async function handleSubmit() {  
     // Handle form submission logic here
     console.log("Image URL:", imageUrl);
     console.log("Description:", description);
