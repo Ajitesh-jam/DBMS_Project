@@ -138,7 +138,7 @@ export default function SearchPage() {
 
   // ✅ Handle user selection
   const handleUserSelect = (userId) => {
-    router.push(`/friendProfile`)
+    router.push(`/friendProfile/${userId}`)
   }
 
   return (

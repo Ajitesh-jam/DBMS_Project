@@ -18,12 +18,13 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
         type={type}
         className={cn(
           "flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background transition-all duration-200",
-          "bg-white border-black-400 text-pink-400 placeholder:text-black-300",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black-400 focus-visible:ring-offset-2",
+          "bg-white border-black text-black-300 placeholder:text-black-300",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium",
           "disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
+        
         ref={ref}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}

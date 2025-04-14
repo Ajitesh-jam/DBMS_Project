@@ -102,12 +102,12 @@ export default function UserProfilePage() {
     setModalOpen(true);
   };
 
-  // ✅ Remove post from state after deleting
+
   const handleDeletePost = (postId) => {
     setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
   };
 
-  // ✅ Mock stories data
+
   const stories = [
     { id: 1, image: "/placeholder.svg?height=80&width=80", title: "Travel" },
     { id: 2, image: "/placeholder.svg?height=80&width=80", title: "Food" },
@@ -121,7 +121,6 @@ export default function UserProfilePage() {
       <UserHeader user={userData} />
       <StoryCircles stories={stories} />
 
-      {/* ✅ Post Modal */}
       {selectedPost && (
         <PostModal
           open={modalOpen}
@@ -137,7 +136,7 @@ export default function UserProfilePage() {
           <TabsTrigger value="reels">Reels</TabsTrigger>
         </TabsList>
         <TabsContent value="posts" className="mt-6">
-          {/* ✅ Pass handlePostClick to PostGrid */}
+
           <PostGrid active={activeTab === "posts"} posts={posts} onPostClick={handlePostClick} />
         </TabsContent>
         <TabsContent value="reels" className="mt-6">

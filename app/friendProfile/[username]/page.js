@@ -14,9 +14,11 @@ import { use } from "react";
 
 export default function FriendProfilePage({ params }) {
   const { username } = use(params);
+
   const [activeTab, setActiveTab] = useState("posts");
   const [posts, setPosts] = useState([]);
   const Friend = useFriends((state) => state.selectedFriend);
+  const setFriend = useFriends((state) => state.setNewFriend);
   const user = useUsers((state) => state.selectedUser);
 
   const [FriendData, setFriendData] = useState({
@@ -28,6 +30,7 @@ export default function FriendProfilePage({ params }) {
 
 
   useEffect(() => {
+    console.log("Friend in FriendProfilePage:", username);
 
     async function fetchFriend() {
       try {
@@ -47,9 +50,11 @@ export default function FriendProfilePage({ params }) {
         const data = await response.json();
         console.log("Friend data:", data);
         if (data.length) {
-          const friendData = data[0].properties;
+          const friendData = data[0].n.properties;
           console.log("Friend data properties:", friendData);
           setFriendData(friendData);
+          setFriend(friendData);
+
         }
       } catch (error) {
         console.error("Error loading friend data:", error);
@@ -97,7 +102,7 @@ export default function FriendProfilePage({ params }) {
     if (Friend.name) {
       checkFollowRequest();
     }
-  }, [username, Friend]);
+  }, [username]);
 
   
   useEffect(() => {

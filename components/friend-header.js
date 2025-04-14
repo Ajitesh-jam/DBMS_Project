@@ -223,10 +223,7 @@ export default function FriendHeader({ Friend, user }) {
               )}
             </Button>
 
-            <Button variant="outline" className="h-9">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Message
-            </Button>
+           
           </div>
         </div>
 
@@ -236,15 +233,7 @@ export default function FriendHeader({ Friend, user }) {
             <span className="font-bold">{Friend.posts}</span>
             <p className="text-sm text-muted-foreground">posts</p>
           </div>
-          <div className="text-center cursor-pointer" onClick={() => router.push(`/followers`)}>
-            <span className="font-bold">{Friend.followers}</span>
-            <p className="text-sm text-muted-foreground">followers</p>
-          </div>
-
-          <div className="text-center cursor-pointer" onClick={() => router.push(`/following`)}>
-            <span className="font-bold">{Friend.following}</span>
-            <p className="text-sm text-muted-foreground">following</p>
-          </div>
+          
         </div>
 
         {/* Bio Section */}
