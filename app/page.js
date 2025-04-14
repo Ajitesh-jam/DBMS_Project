@@ -74,7 +74,7 @@ return (
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
       >
-        Friend's Posts
+        Friend s Posts
       </motion.h2>
 
       <div ref={ref} className="space-y-12">

@@ -1,18 +1,16 @@
 "use client"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { MessageSquare, UserPlus, UserCheck } from "lucide-react"
+import {  UserPlus, UserCheck } from "lucide-react"
 import { useState, useEffect } from "react"
-import useUsers from "@/hooks/user.zustand"
-import useFriends from "@/hooks/friend.zustand"
-import { useRouter } from "next/navigation"
+
 
 export default function FriendHeader({ Friend, user }) {
   const [requestStatus, setRequestStatus] = useState("none") // 'none', 'requested', 'following'
   const [isLoading, setIsLoading] = useState(false)
   // const user = useUsers((state) => state.selectedUser);
   // const Friend = useFriends((state) => state.selectedFriend);
-  const router = useRouter()
+
   
   const createFollowRequest = async () => {
     try {

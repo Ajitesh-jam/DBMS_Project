@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
+
 import { Loader2, UserIcon } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -29,7 +29,7 @@ export default function UserSearchResults({ results, isLoading, searchTerm, onUs
   if (results.length === 0 && searchTerm) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p className="text-lg">No users found matching "{searchTerm}"</p>
+        <p className="text-lg">No users found matching with {searchTerm} </p>
       </div>
     )
   }

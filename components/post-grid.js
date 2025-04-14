@@ -9,15 +9,17 @@ export default function PostGrid({ active, posts }) {
   const [selectedPost, setSelectedPost] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
 
-  // ✅ Open Modal when post is clicked
+
   const handlePostClick = (post) => {
     setSelectedPost(post)
     setModalOpen(true)
   }
 
-  // ✅ Remove post after deleting
-  const handleDeletePost = (postId) => {
-    const updatedPosts = posts.filter((post) => post.id !== postId)
+
+  const handleDeletePost = (
+  //  postId
+  ) => {
+    //const updatedPosts = posts.filter((post) => post.id !== postId)
     setSelectedPost(null)
     setModalOpen(false)
   }

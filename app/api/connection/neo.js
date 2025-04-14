@@ -1,7 +1,5 @@
-import { q } from "framer-motion/client";
-import { start } from "repl";
 
-const neo4j = require("neo4j-driver");
+import neo4j from "neo4j-driver";
 
 const URI = process.env.URI;
 const USER = process.env.USERNAME;
@@ -54,7 +52,7 @@ export const getNodeByLabel = async (label, where = {}) => {
 
   // Build the conditions string
   const conditions = Object.entries(where)
-    .map(([key, value]) => 
+    .map(([key]) => 
        `n.${key} = $where_${key}`  // Use parameterized query for strings, booleans, etc.
     )
     .join(" AND ");
@@ -216,17 +214,17 @@ export const getStartAdjacentNode = async (
 
   // Handle node conditions (n)
   const whereString = Object.entries(where)
-  .map(([key,value])=>
+  .map(([key])=>
       `n.${key} = $where_${key}`)
   .join(" AND ");
 
   const edgeWhereString = Object.entries(edgeWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `e.${key} = $edgeWhere_${key}`)
   .join(" AND ");
 
   const adjWhereString = Object.entries(adjWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `m.${key} = $adjWhere_${key}`)
   .join(" AND ");
 
@@ -273,15 +271,15 @@ export const checkEdge= async (
   let query = `MATCH (n:${label}) -[e:${edgeLabel}]-> (m:${adjNodeLabel}) `;
 
   const whereString = Object.entries(where)
-    .map(([key, value]) => `n.${key} = $where_${key}`)
+    .map(([key]) => `n.${key} = $where_${key}`)
     .join(" AND ");
 
   const edgeWhereString = Object.entries(edgeWhere)
-    .map(([key, value]) => `e.${key} = $edgeWhere_${key}`)
+    .map(([key]) => `e.${key} = $edgeWhere_${key}`)
     .join(" AND ");
 
   const adjWhereString = Object.entries(adjWhere)
-    .map(([key, value]) => `m.${key} = $adjWhere_${key}`)
+    .map(([key]) => `m.${key} = $adjWhere_${key}`)
     .join(" AND ");
 
   const conditions = [whereString, edgeWhereString, adjWhereString].filter(Boolean);
@@ -316,17 +314,17 @@ export const getAdjacentNode = async (
 
   // Handle node conditions (n)
   const whereString = Object.entries(where)
-  .map(([key,value])=>
+  .map(([key])=>
       `n.${key} = $where_${key}`)
   .join(" AND ");
 
   const edgeWhereString = Object.entries(edgeWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `e.${key} = $edgeWhere_${key}`)
   .join(" AND ");
 
   const adjWhereString = Object.entries(adjWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `m.${key} = $adjWhere_${key}`)
   .join(" AND ");
 
@@ -378,24 +376,21 @@ export const getAdjacentNodesOfAdjNode = async (
 
   // Handle node conditions (n)
   const whereString = Object.entries(where)
-  .map(([key,value])=>
+  .map(([key])=>
       `n.${key} = $where_${key}`)
   .join(" AND ");
 
   const edgeWhereString = Object.entries(edgeWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `e.${key} = $edgeWhere_${key}`)
   .join(" AND ");
 
   const adjWhereString = Object.entries(adjWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `m.${key} = $adjWhere_${key}`)
   .join(" AND ");
 
-  const adjNodeNodeWhereString = Object.entries(AdjNodesofAdjNodeEdgeWhere)
-  .map(([key,value])=>
-      `m.${key} = $adjWhere_${key}`)
-  .join(" AND ");
+
 
   console.log("WHERE conditions:", whereString);
   if(whereString || adjWhereString || edgeWhereString)
@@ -427,7 +422,7 @@ export const getAdjacentNodesOfAdjNode = async (
     query += ` OPTIONAL MATCH (m)-[r:${AdjNodesofAdjNodeEdgeLabel}]->(adj:${AdjNodesofAdjNodeLabel})`;
 
     const adjEdgeConditions = Object.entries(AdjNodesofAdjNodeEdgeWhere).map(
-      ([key, value]) => `r.${key} = $adjEdgeWhere_${key}`
+      ([key]) => `r.${key} = $adjEdgeWhere_${key}`
     );
 
     if (adjEdgeConditions.length > 0) {
@@ -567,11 +562,11 @@ export const createAdjacentNode = async (
   // Construct the final Cypher query
   const query = `
     MERGE (n:${startLabelString} { ${Object.entries(startNodeWhere)
-      .map(([k, v]) => `${k}: $start_${k}`)
+      .map(([k]) => `${k}: $start_${k}`)
       .join(", ")} })
     
     MERGE (m:${endLabelString} { ${Object.entries(endNodeWhere)
-      .map(([k, v]) => `${k}: $end_${k}`)
+      .map(([k]) => `${k}: $end_${k}`)
       .join(", ")} })
 
     MERGE (n)-[e:${edgeLabel} { ${propsString} }]->(m)
@@ -608,7 +603,7 @@ export const deleteNode = async (label, where) => {
     query +=
       ` WHERE ` +
       Object.entries(where)
-        .map(([k, v]) => `n.${k} = $${k}`)
+        .map(([k]) => `n.${k} = $${k}`)
         .join(" AND ");
   }
 
@@ -631,7 +626,7 @@ export const deleteEdge = async (
   if (Object.keys(startNodeWhere).length > 0) {
     conditions.push(
       Object.entries(startNodeWhere)
-        .map(([k, v]) => `n.${k} = $start_${k}`)
+        .map(([k]) => `n.${k} = $start_${k}`)
         .join(" AND ")
     );
   }
@@ -639,7 +634,7 @@ export const deleteEdge = async (
   if (Object.keys(endNodeWhere).length > 0) {
     conditions.push(
       Object.entries(endNodeWhere)
-        .map(([k, v]) => `m.${k} = $end_${k}`)
+        .map(([k]) => `m.${k} = $end_${k}`)
         .join(" AND ")
     );
   }
@@ -676,7 +671,7 @@ export const deleteAdjacentNode = async (
   if (Object.keys(startNodeWhere).length > 0) {
     conditions.push(
       Object.entries(startNodeWhere)
-        .map(([k, v]) => `n.${k} = $start_${k}`)
+        .map(([k]) => `n.${k} = $start_${k}`)
         .join(" AND ")
     );
   }
@@ -684,7 +679,7 @@ export const deleteAdjacentNode = async (
   if (Object.keys(endNodeWhere).length > 0) {
     conditions.push(
       Object.entries(endNodeWhere)
-        .map(([k, v]) => `m.${k} = $end_${k}`)
+        .map(([k]) => `m.${k} = $end_${k}`)
         .join(" AND ")
     );
   }
@@ -711,11 +706,11 @@ export const deleteAdjacentNode = async (
 
 export const updateNode = async (label, where, updates) => {
   const whereString = Object.entries(where)
-  .map(([key, value]) => `n.${key} = $where_${key}`)
+  .map(([key]) => `n.${key} = $where_${key}`)
   .join(" AND ");
 
   const updatesString = Object.entries(updates)
-  .map(([key, value]) => `n.${key} = $updates_${key}`)
+  .map(([key]) => `n.${key} = $updates_${key}`)
   .join(", ");
 
   const query = `MATCH (n:${label}) WHERE ${whereString} SET ${updatesString} RETURN n;`;
@@ -745,16 +740,16 @@ export const updateEdge = async (
 ) => {
   // Convert `where` conditions to Cypher for start and end nodes
   const startWhereString = Object.entries(startNodeWhere)
-    .map(([key, value]) => `n.${key} = $start_${key}`)
+    .map(([key]) => `n.${key} = $start_${key}`)
     .join(" AND ");
 
   const endWhereString = Object.entries(endNodeWhere)
-    .map(([key, value]) => `m.${key} = $end_${key}`)
+    .map(([key]) => `m.${key} = $end_${key}`)
     .join(" AND ");
 
   // Convert `updates` properties to a Cypher `SET` clause
   const updatesString = Object.entries(updates)
-    .map(([key, value]) => `e.${key} = $update_${key}`) // Prefix with `update_` to avoid conflicts
+    .map(([key]) => `e.${key} = $update_${key}`) // Prefix with `update_` to avoid conflicts
     .join(", ");
 
   // Construct query
@@ -794,16 +789,16 @@ export const updateAdjacentNode = async (
 ) => {
   // Convert `where` conditions to Cypher for start and end nodes
   const startWhereString = Object.entries(startNodeWhere)
-    .map(([key, value]) => `n.${key} = $start_${key}`)
+    .map(([key]) => `n.${key} = $start_${key}`)
     .join(" AND ");
 
   const endWhereString = Object.entries(endNodeWhere)
-    .map(([key, value]) => `m.${key} = $end_${key}`)
+    .map(([key]) => `m.${key} = $end_${key}`)
     .join(" AND ");
 
   // Convert `updates` properties to a Cypher `SET` clause
   const updatesString = Object.entries(updates)
-    .map(([key, value]) => `m.${key} = $update_${key}`) // Prefix with `update_` to avoid conflicts
+    .map(([key]) => `m.${key} = $update_${key}`) // Prefix with `update_` to avoid conflicts
     .join(", ");
 
   // Construct query
@@ -842,17 +837,17 @@ export const getEdgesToNode = async ( label , where , edgeLabel ,edgeWhere, adjN
 
   // Handle node conditions (n)
   const whereString = Object.entries(where)
-  .map(([key,value])=>
+  .map(([key])=>
       `n.${key} = $where_${key}`)
   .join(" AND ");
 
   const edgeWhereString = Object.entries(edgeWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `e.${key} = $edgeWhere_${key}`)
   .join(" AND ");
 
   const adjWhereString = Object.entries(adjWhere)
-  .map(([key,value])=>
+  .map(([key])=>
       `m.${key} = $adjWhere_${key}`)
   .join(" AND ");
 

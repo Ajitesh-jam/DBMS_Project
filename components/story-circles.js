@@ -1,7 +1,9 @@
-import Image from "next/image"
-import Link from "next/link"
+// import Image from "next/image"
+// import Link from "next/link"
 
-export default function StoryCircles({ stories }) {
+export default function StoryCircles(
+  //{ stories }
+  ) {
   return (
     <div className="mt-8 flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
       {/* {stories.map((story) => (

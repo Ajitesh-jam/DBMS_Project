@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useAnimation } from "framer-motion"
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react"
+import { Heart, MessageCircle, Bookmark } from "lucide-react"
 import useUsers from "@/hooks/user.zustand";
 
 export default function PostCard({ post }) {

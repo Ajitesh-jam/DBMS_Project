@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserHeader from "@/components/user-header";
 import StoryCircles from "@/components/story-circles";
 import PostGrid from "@/components/post-grid";
-import ReelGrid from "@/components/reel-grid";
+
 import PostModal from "@/components/post-modal";
 import useUsers from "@/hooks/user.zustand";
 import { motion ,useAnimation,useInView } from "framer-motion";

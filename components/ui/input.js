@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   const [isFocused, setIsFocused] = React.useState(false);
-  const [hasValue, setHasValue] = React.useState(false);
+  //const [hasValue, setHasValue] = React.useState(false);
 
-  React.useEffect(() => {
-    setHasValue(!!props.value);
-  }, [props.value]);
+  // React.useEffect(() => {
+  //   //setHasValue(!!props.value);
+  // }, [props.value]);
 
   return (
     <div className="relative">
@@ -29,7 +29,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onChange={(e) => {
-          setHasValue(!!e.target.value);
+          //setHasValue(!!e.target.value);
           if (props.onChange) props.onChange(e);
         }}
         {...props}

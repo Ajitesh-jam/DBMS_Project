@@ -5,15 +5,16 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useUsers from "@/hooks/user.zustand";
+import Image from "next/image";
 
 export default function FollowersPage() {
     const [followers, setFollowers] = useState([]);
     const user = useUsers((state) => state.selectedUser);
     const router = useRouter();
-    const handleUserSelect = (userId) => {
+    const handleUserSelect = () => {
         router.push(`/friendProfile`) // Navigate with query param
       }
-    // ✅ Fetch followers dynamically
+
     useEffect(() => {
         async function fetchFollowers() {
             try {
@@ -65,7 +66,7 @@ export default function FollowersPage() {
                                 className="flex justify-between items-center border-b py-2"
                             >
                                 <div className="flex items-center gap-4">
-                                    <img
+                                    <Image
                                         src={follower.n?.properties?.
                                             imageUrl
                                             || "/avatar.png"}

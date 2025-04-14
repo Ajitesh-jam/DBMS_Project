@@ -35,7 +35,6 @@ function App() {
 
   function uint8arrayToHex(value) {
     if (!value) return "";
-    // @ts-ignore
     return value.toString("hex");
   }
 

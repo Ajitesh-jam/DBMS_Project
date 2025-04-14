@@ -13,18 +13,18 @@ export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState([])
-  const [isSuccess, setIsSuccess] = useState(false);
+
   const [error, setError] = useState(null)
 
 
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
            
   const getMockUsers = (term) => [
     {
@@ -101,9 +101,9 @@ export default function SearchPage() {
       } else {
         setSearchResults(data)
         
-      setIsSuccess(true);
 
-      // Redirect to profile after success
+
+
       setTimeout(() => {
         router.push("/friendProfile/" + user.name);
       }, 1500);

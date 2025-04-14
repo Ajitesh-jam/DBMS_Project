@@ -92,7 +92,7 @@ export default function Explore() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredPosts.map((post, index) => (
+          {filteredPosts.map((post) => (
             <motion.div
               key={post.id}
               className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"

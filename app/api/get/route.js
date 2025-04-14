@@ -1,7 +1,7 @@
 import { getWholeGraph } from "../connection/neo";
 import { NextResponse } from "next/server";
 
-export async function GET(req) {
+export async function GET() {
   try {
     const response = await getWholeGraph();
     return NextResponse.json(response, { status: 200 });

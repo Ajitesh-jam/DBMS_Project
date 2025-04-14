@@ -140,7 +140,7 @@ export default function LoginPage() {
       }, 1500);
     } catch (error) {
       //console.error("Login error:", error);
-      setError( "Invalid credentials. Please try again.");
+      setError( "Invalid credentials. Please try again.",error);
     } finally {
       setIsSubmitting(false);
     }
@@ -387,7 +387,7 @@ export default function LoginPage() {
               transition={{ delay: 0.6, duration: 0.5 }}
               className="text-sm text-muted-foreground"
             >
-              Don't have an account?{" "}
+              Don t have an account?{" "}
               <Button
                 variant="link"
                 className="p-0"

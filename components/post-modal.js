@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { X, MoreVertical, Trash, Info, Edit } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -9,7 +9,7 @@ import useUsers from "@/hooks/user.zustand";
 export default function PostModal({ open, onClose, post, onDelete }) {
   const [showOptions, setShowOptions] = useState(false);
   const user = useUsers((state) => state.selectedUser);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting] = useState(false);
 
   const handleDelete = async () => {
     try {

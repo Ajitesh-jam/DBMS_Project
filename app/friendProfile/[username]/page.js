@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FriendHeader from "@/components/friend-header";
-import StoryCircles from "@/components/story-circles";
+
 import PostGrid from "@/components/post-grid";
-import ReelGrid from "@/components/reel-grid";
+
 import useFriends from "@/hooks/friend.zustand";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+
 import useUsers from "@/hooks/user.zustand";
 import { use } from "react";
 
@@ -21,12 +20,7 @@ export default function FriendProfilePage({ params }) {
   const setFriend = useFriends((state) => state.setNewFriend);
   const user = useUsers((state) => state.selectedUser);
 
-  const [FriendData, setFriendData] = useState({
-    ...Friend,
-    followers: 0,
-    following: 0,
-    posts: 0,
-  });
+
 
 
   useEffect(() => {
@@ -52,7 +46,6 @@ export default function FriendProfilePage({ params }) {
         if (data.length) {
           const friendData = data[0].n.properties;
           console.log("Friend data properties:", friendData);
-          setFriendData(friendData);
           setFriend(friendData);
 
         }
@@ -139,37 +132,20 @@ export default function FriendProfilePage({ params }) {
           }));
 
           setPosts(enhancedPosts);
-
-          // Update post count dynamically in FriendData
-          setFriendData((prev) => ({
-            ...prev,
-            posts: enhancedPosts.length,
-          }));
+          
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
     }
 
-    setFriendData({
-      ...Friend,
-      followers: Friend.followers || 0,
-      following: Friend.following || 0,
-      posts: 0,
-    });
+
 
     if (Friend.name) {
       fetchPosts();
     }
   }, [Friend]);
 
-  const stories = [
-    { id: 1, image: "/placeholder.svg?height=80&width=80", title: "Travel" },
-    { id: 2, image: "/placeholder.svg?height=80&width=80", title: "Food" },
-    { id: 3, image: "/placeholder.svg?height=80&width=80", title: "Pets" },
-    { id: 4, image: "/placeholder.svg?height=80&width=80", title: "Nature" },
-    { id: 5, image: "/placeholder.svg?height=80&width=80", title: "Music" },
-  ];
 
   return (
     <main className="container max-w-4xl mx-auto px-4 py-8">
@@ -181,18 +157,15 @@ export default function FriendProfilePage({ params }) {
       <Tabs defaultValue="posts" className="mt-8" onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-2">
           <TabsTrigger value="posts">Posts</TabsTrigger>
-          <TabsTrigger value="reels">Reels</TabsTrigger>
+
         </TabsList>
 
-        {/* Posts Tab */}
+
         <TabsContent value="posts" className="mt-6">
           <PostGrid active={activeTab === "posts"} posts={posts} />
         </TabsContent>
 
-        {/* Reels Tab */}
-        <TabsContent value="reels" className="mt-6">
-          <ReelGrid active={activeTab === "reels"} />
-        </TabsContent>
+        
       </Tabs>
     </main>
   );

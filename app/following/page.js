@@ -6,20 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useUsers from "@/hooks/user.zustand";
 import useFriends from "@/hooks/friend.zustand";
-
+import Image from "next/image";
 export default function FollowingPage() {
   const [following, setFollowing] = useState([]);
-  const user = useUsers((state) => state.selectedUser); // ✅ Get selected user
-  const setNewFriend = useFriends((state) => state.setNewFriend); // ✅ Set selected friend
+  const user = useUsers((state) => state.selectedUser); 
+  const setNewFriend = useFriends((state) => state.setNewFriend); 
   const router = useRouter();
 
-  // ✅ Handle user selection and navigate to `friendProfile`
+
   const handleUserSelect = (followingUser) => {
     setNewFriend(followingUser.m?.properties); // Set selected friend's data
     router.push(`/friendProfile`); // Navigate to friend profile
   };
 
-  // ✅ Fetch following list dynamically
+
   useEffect(() => {
     async function fetchFollowing() {
       try {
@@ -30,7 +30,7 @@ export default function FollowingPage() {
           },
           body: JSON.stringify({
             label: ["USER"],
-            where: { name: user.name }, // ✅ Filter by user name
+            where: { name: user.name }, 
             edgeLabel: "FOLLOWS",
             edgeWhere: {},
             adjNodeLabel: ["USER"],
@@ -44,7 +44,7 @@ export default function FollowingPage() {
 
         const data = await response.json();
         console.log("data:", data);
-        setFollowing(data || []); // ✅ Set following list
+        setFollowing(data || []); 
       } catch (error) {
         console.error("Error loading following list:", error);
       }
@@ -63,7 +63,7 @@ export default function FollowingPage() {
         </CardHeader>
         <CardContent>
           {following.length === 0 ? (
-            <p>You're not following anyone yet.</p>
+            <p>You are not following anyone yet.</p>
           ) : (
             following.map((followingUser, index) => (
               <div
@@ -71,7 +71,7 @@ export default function FollowingPage() {
                 className="flex justify-between items-center border-b py-2"
               >
                 <div className="flex items-center gap-4">
-                  <img
+                  <Image
                     src={
                       followingUser.m?.properties?.imageUrl || "/avatar.png"
                     }

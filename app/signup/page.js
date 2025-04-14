@@ -136,22 +136,22 @@ export default function SignupPage() {
     }));
   };
 
-  const handleImageUpload = (e) => {
-    // In a real app, this would upload to a storage service
-    // For this example, we'll just set the URL directly
-    // const file = e.target.files[0];
-    // if (file) {
-    //   // Simulate upload and getting a URL back
-    //   setTimeout(() => {
-    //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
-    //     setFormData((prev) => ({
-    //       ...prev,
-    //       imageUrl: fakeUrl,
-    //     }));
-    //   }, 1000);
-    // }
-    //set;
-  };
+  // const handleImageUpload = (e) => {
+  //   // In a real app, this would upload to a storage service
+  //   // For this example, we'll just set the URL directly
+  //   // const file = e.target.files[0];
+  //   // if (file) {
+  //   //   // Simulate upload and getting a URL back
+  //   //   setTimeout(() => {
+  //   //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
+  //   //     setFormData((prev) => ({
+  //   //       ...prev,
+  //   //       imageUrl: fakeUrl,
+  //   //     }));
+  //   //   }, 1000);
+  //   // }
+  //   //set;
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

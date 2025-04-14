@@ -1,10 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { MessageSquare, UserPlus, UserCheck } from "lucide-react";
+import {  UserPlus, UserCheck } from "lucide-react";
 import { useState } from "react";
-import Router from "next/router";
-import Image from "next/image";
+
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
