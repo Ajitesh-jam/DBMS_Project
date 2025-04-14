@@ -107,6 +107,8 @@ export const getEdgesOfNode = async (
       .map((condition) => {
         const [key, value] = Object.entries(condition)[0];
 
+
+
         if (typeof value === "string") return `e.${key} = "${value}"`;
         if (typeof value === "number") return `e.${key} = ${value}`;
         if (typeof value === "boolean") return `e.${key} = ${value}`;
@@ -517,10 +519,6 @@ export const createEdge = async (
       RETURN e
     `;
 
-    console.log("Final Cypher Query:", query);
-    console.log("Properties:", properties);
-    console.log("Start Node Where:", startNodeWhere);
-    console.log("End Node Where:", endNodeWhere);
 
   
     const params = {
@@ -532,11 +530,11 @@ export const createEdge = async (
       ),
     };
 
-    // ✅ Run query using runQuery function
+    
     const result = await runQuery(query, params);
     return result;
   } catch (error) {
-    console.error("❌ Error creating edge:", error);
+    console.error(" Error creating edge:", error);
     throw error;
   }
 };
@@ -833,4 +831,58 @@ export const updateAdjacentNode = async (
 
   // Run query with params
   return await runQuery(query, params);
+}
+
+
+
+export const getEdgesToNode = async ( label , where , edgeLabel ,edgeWhere, adjNodeLabel,adjWhere) => {
+
+
+  let query = `MATCH (n:${label}) <- [e:${edgeLabel}] - (m:${adjNodeLabel}) `;
+
+  // Handle node conditions (n)
+  const whereString = Object.entries(where)
+  .map(([key,value])=>
+      `n.${key} = $where_${key}`)
+  .join(" AND ");
+
+  const edgeWhereString = Object.entries(edgeWhere)
+  .map(([key,value])=>
+      `e.${key} = $edgeWhere_${key}`)
+  .join(" AND ");
+
+  const adjWhereString = Object.entries(adjWhere)
+  .map(([key,value])=>
+      `m.${key} = $adjWhere_${key}`)
+  .join(" AND ");
+
+  console.log("WHERE conditions:", whereString);
+  if(whereString || adjWhereString || edgeWhereString)
+    query += " WHERE ";
+  if (whereString) query += whereString;
+  if (whereString && edgeWhereString) query += " AND ";
+  if (edgeWhereString) query += edgeWhereString;
+  if (whereString && adjWhereString) query += " AND ";
+  if (adjWhereString) query += adjWhereString;
+
+  const params = {
+    ...Object.fromEntries(
+      Object.entries(where).map(([key, value]) => [`where_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(edgeWhere).map(([key, value]) => [`edgeWhere_${key}`, value])
+    ),
+    ...Object.fromEntries(
+      Object.entries(adjWhere).map(([key, value]) => [`adjWhere_${key}`, value])
+    )
+        
+    
+  };
+  
+  query += " return e;";
+
+  console.log("Final Cypher Query:", query);
+  console.log("Final Cypher params:", params);
+
+  return await runQuery(query,params);
 }

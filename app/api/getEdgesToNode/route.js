@@ -1,17 +1,26 @@
-import { getEdgesOfNode } from "../connection/neo";
+import { getEdgesToNode } from "../connection/neo";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const { label, where, edgeLabel, edgeWhere } = await req.json();
-    console.log("Request body:", { label, where, edgeLabel, edgeWhere });
-    
-    //add dtaa like : [{postedBy: post.adj?.properties?.postedBy} , {} ]
-    const response = await getEdgesOfNode(
+    const {
+      label,
+      where,
+      edgeLabel,
+      edgeWhere,
+      adjNodeLabel,
+      adjWhere,
+    } = await req.json();
+
+   
+
+    const response = await getEdgesToNode(
       label,
       where || [],
       edgeLabel,
-      edgeWhere || []
+      edgeWhere || [],
+      adjNodeLabel,
+      adjWhere || []
     );
 
     return NextResponse.json(response, { status: 200 });

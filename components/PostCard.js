@@ -9,17 +9,25 @@ import useUsers from "@/hooks/user.zustand";
 
 export default function PostCard({ post }) {
   const [liked, setLiked] = useState(false)
+  const [saved, setSaved] = useState(false)
   const user = useUsers((state) => state.selectedUser);
-  const [likes, setLikes] = useState(post.likes)
+
   const [showComments, setShowComments] = useState(false)
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState(post.comments || [])
+  const [numberOfComments, setNumberOfComments] = useState(0);
+  const [numberOfLikes, setNumberOfLikes] = useState(0);
+
+  let postFetched = false;
+
+
   const controls = useAnimation()
   const cardRef = useRef(null)
 
   const handleLike = () => {
     if (liked) {
-      setLikes(likes - 1)
+
+      setNumberOfLikes(numberOfLikes-1 )
 
 
       fetch("/api/deleteEdge", {
@@ -32,7 +40,7 @@ export default function PostCard({ post }) {
             startNodeLabel: "USER",
             startNodeWhere: { name: user.name },
             endNodeLabel: "POST",
-            endNodeWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+            endNodeWhere: { name: post.name, postedBy: post.postedBy },
             edgeLabel: "LIKED",
             properties: {},
           }),
@@ -48,7 +56,8 @@ export default function PostCard({ post }) {
       
     } 
     else {
-      setLikes(likes + 1)
+
+      setNumberOfLikes(numberOfLikes + 1)
       controls.start({
         scale: [1, 12, 1],
         transition: { duration: 0.3 },
@@ -65,7 +74,7 @@ export default function PostCard({ post }) {
             startNodeLabel: ["USER"],
             startNodeWhere: { name: user.name },
             endNodeLabel: ["POST"],
-            endNodeWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+            endNodeWhere: { name: post.name, postedBy: post.postedBy },
             edgeLabel: "LIKED",
             properties: {},
           }),
@@ -98,12 +107,12 @@ export default function PostCard({ post }) {
             startNodeLabel: ["USER"],
             startNodeWhere: { name: user.name },
             endNodeLabel: ["POST"],
-            endNodeWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+            endNodeWhere: { name: post.name, postedBy: post.postedBy },
             edgeLabel: "COMMENT",
             properties: {
               comment: comment,
               postedBy: user.name,
-              postedTo: post.adj?.properties?.postedBy,
+              postedTo: post.postedBy,
               postedAt: new Date().toISOString(),
 
             },
@@ -121,6 +130,9 @@ export default function PostCard({ post }) {
 
   useEffect(() => {
 
+    if(postFetched) return;
+    postFetched = true;
+
     console.log("Post card : ", post);
     //fetch if the post is liked 
     fetch("/api/checkEdge", {
@@ -132,7 +144,7 @@ export default function PostCard({ post }) {
       label: "USER",
       where: { name: user.name },
       adjNodeLabel: "POST",
-      adjWhere: { name: post.adj?.properties?.name, postedBy: post.adj?.properties?.postedBy },
+      adjWhere: { name: post.name, postedBy: post.postedBy },
       edgeLabel: "LIKED",
       }),
     })
@@ -145,27 +157,51 @@ export default function PostCard({ post }) {
       console.error("Error checking edge existence:", error);
       });
       
+    fetch("/api/checkEdge", {
+      method: "POST",
+      headers: {
+      "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+      label: "USER",
+      where: { name: user.name },
+      adjNodeLabel: "POST",
+      adjWhere: { name: post.name, postedBy: post.postedBy },
+      edgeLabel: "SAVED",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+      console.log("Edge exists for post :", data, post);
+      setSaved(data.edgeExists);
+      })
+      .catch((error) => {
+      console.error("Error checking edge existence:", error);
+      });
       
-      fetch("/api/getEdgesOfNodeByLabel", {
+      
+      fetch("/api/getEdgesToNode", {
         method: "POST",
         headers: {
         "Content-Type": "application/json",
         },
         body: JSON.stringify({
-        label: "USER",
-        where: { name: user.name },
+        label: "POST",
+        where: { postedBy: post.postedBy , name : post.name },
         edgeLabel: "COMMENT",
-        edgeWhere:{postedBy: post.adj?.properties?.postedBy}      // YEH KAAM NHI KARA HAI----------------------------------------------------------------------------------------------------------------------------------
-
+        edgeWhere:{} ,     
+        adjNodeLabel: "USER",
+        adjWhere: {}
         }),
       })
         .then((response) => response.json())
         .then((data) => {
 
-          console.log("Comment by :", data, post);
-          data.forEach((comment) => {
+        
+          console.log("comments ", data);
+          data.map((comment) => {
             console.log("comment", comment);
-            
+            setNumberOfComments((prevCount) => prevCount + 1);
               setComments((prevComments) => [
                 ...prevComments,
                 { user: comment.e.properties?.postedBy, text: comment.e.properties?.comment },
@@ -176,7 +212,92 @@ export default function PostCard({ post }) {
         .catch((error) => {
         console.error("Error checking edge existence:", error);
         });
+
+        fetch("/api/getEdgesToNode", {
+          method: "POST",
+          headers: {
+          "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+          label: "POST",
+          where: { postedBy: post.postedBy , name : post.name },
+          edgeLabel: "LIKED",
+          edgeWhere:{} ,     
+          adjNodeLabel: "USER",
+          adjWhere: {}
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // set likes as data.size
+
+           
+            setNumberOfLikes(data.length);
+            
+          })
+          .catch((error) => {
+          console.error("Error checking edge existence:", error);
+          });
   },[]);
+
+  async function savePost() {
+    console.log("Saving post...")
+    if (saved) {
+
+      fetch("/api/deleteEdge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:
+          JSON.stringify({
+            startNodeLabel: "USER",
+            startNodeWhere: { name: user.name },
+            endNodeLabel: "POST",
+            endNodeWhere: { name: post.name, postedBy: post.postedBy },
+            edgeLabel: "SAVED",
+            properties: {},
+          }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("saves updated successfully:", data)
+      })
+      .catch((error) => {
+        console.error("Error updating saves:", error)
+      })
+
+      
+    } 
+    else {
+
+
+      fetch("/api/createEdge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:
+          JSON.stringify({
+            startNodeLabel: ["USER"],
+            startNodeWhere: { name: user.name },
+            endNodeLabel: ["POST"],
+            endNodeWhere: { name: post.name, postedBy: post.postedBy },
+            edgeLabel: "SAVED",
+            properties: {},
+          }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("saves updated successfully:", data)
+      })
+      .catch((error) => {
+        console.error("Error updating saves:", error)
+      })
+
+    }  
+    setSaved(!saved)  
+  }
 
   return (
     <motion.div
@@ -205,18 +326,16 @@ export default function PostCard({ post }) {
           className="rounded-full"
         />
         <div className="ml-3">
-          <Link href={`/friendProfile/${post.adj?.properties?.postedBy}`} className="font-medium hover:underline ">
-            {post.adj?.properties?.postedBy}
+          <Link href={`/friendProfile/${post.postedBy}`} className="font-medium hover:underline ">
+            {post.postedBy}
           </Link>
         </div>
-        <button className="ml-auto p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
-          <MoreHorizontal className="h-5 w-5" />
-        </button>
+        
       </div>
 
       <div className="relative aspect-square">
         <Image
-          src={post.adj?.properties?.imageUrl || "/placeholder.svg"}
+          src={post.imageUrl || "/placeholder.svg"}
           alt = "/placeholder.svg"
           fill
           style={{ objectFit: "cover" }}
@@ -234,19 +353,18 @@ export default function PostCard({ post }) {
           >
             <Heart className={`h-6 w-6 ${liked ? "fill-current" : ""}`} />
           </motion.button>
+          <span className="ml-1">{numberOfLikes}</span>
 
 
           <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-2">
             <MessageCircle className="h-6 w-6" />
           </button>
-          <span className="ml-1">{}</span>
+          <span className="ml-1">{numberOfComments}</span>
 
-          <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-2">
-            <Send className="h-6 w-6" />
-          </button>
+         
 
           <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto">
-            <Bookmark className="h-6 w-6" />
+            <Bookmark className={`h-6 w-6 ${saved ? "fill-current" : ""}`} onClick={savePost}  />
           </button>
         </div>
 
@@ -259,6 +377,9 @@ export default function PostCard({ post }) {
           </p>
           <p className="text-gray-500 text-sm">{}</p>
         </div>
+
+        <span> {post.postedBy} :  {post.description} </span>
+
 
         <AnimatePresence>
           {showComments && (

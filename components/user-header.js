@@ -52,10 +52,7 @@ export default function UserHeader({ user }) {
                 </>
               )}
             </Button>
-            <Button variant="outline" className="h-9">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Message
-            </Button>
+            
           </div>
         </div>
 

@@ -95,7 +95,7 @@ return (
               },
             }}
           >
-            <PostCard post={post} />
+            <PostCard post={post.adj.properties} />
           </motion.div>
         ))}
       </div>

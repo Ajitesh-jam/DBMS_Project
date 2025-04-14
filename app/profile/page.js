@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserHeader from "@/components/user-header";
 import StoryCircles from "@/components/story-circles";
@@ -8,7 +8,8 @@ import PostGrid from "@/components/post-grid";
 import ReelGrid from "@/components/reel-grid";
 import PostModal from "@/components/post-modal";
 import useUsers from "@/hooks/user.zustand";
-
+import { motion ,useAnimation,useInView } from "framer-motion";
+import PostCard from "@/components/PostCard";
 
 // Inside your JSX where UserHeader is rendered
 
@@ -17,6 +18,10 @@ import useUsers from "@/hooks/user.zustand";
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
+  const controls = useAnimation();
+
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, amount: 0.1 });
 
   const user = useUsers((state) => state.selectedUser);
   const [posts, setPosts] = useState([]);
@@ -30,7 +35,7 @@ export default function UserProfilePage() {
     posts: 0,
   });
 
-  // ✅ Fetch posts dynamically from API
+
   useEffect(() => {
     setUserData({
       ...user,
@@ -96,7 +101,6 @@ export default function UserProfilePage() {
     }
   }, [user]);
 
-  // ✅ Handle post selection to open modal
   const handlePostClick = (post) => {
     setSelectedPost(post);
     setModalOpen(true);
@@ -116,6 +120,52 @@ export default function UserProfilePage() {
     { id: 5, image: "/placeholder.svg?height=80&width=80", title: "Music" },
   ];
 
+  const [savedPosts, setSavedPosts] = useState([]);
+
+  useEffect(() => {
+    if (inView) {
+      controls.start("visible");
+    }
+  }, [controls, inView]);
+
+
+  useEffect(() => {
+    async function fetchFriendPosts() {
+      try {
+
+
+
+        const response = await fetch("/api/getAdjNodeByLabel", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: "USER",
+            where: { name: user.name },
+            edgeLabel: "SAVED",
+            edgeWhere: {},
+            adjNodeLabel: "POST",
+            adjWhere: {},
+         
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("Error fetching friends posts.");
+        }
+        console.log("saved posts response:", response);
+        const data = await response.json();
+        console.log("saved Posts data:", data);
+        setSavedPosts(data || []);
+      } catch (error) {
+        console.error("Error loading followers:", error);
+    }
+    }
+    
+      fetchFriendPosts();
+  
+  }, [user]);
+
   return (
     <main className="container max-w-4xl mx-auto px-4 py-8">
       <UserHeader user={userData} />
@@ -133,14 +183,39 @@ export default function UserProfilePage() {
       <Tabs defaultValue="posts" className="mt-8" onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-2">
           <TabsTrigger value="posts">Posts</TabsTrigger>
-          <TabsTrigger value="reels">Reels</TabsTrigger>
+          <TabsTrigger value="reels">Saved Posts</TabsTrigger>
         </TabsList>
         <TabsContent value="posts" className="mt-6">
 
           <PostGrid active={activeTab === "posts"} posts={posts} onPostClick={handlePostClick} />
         </TabsContent>
         <TabsContent value="reels" className="mt-6">
-          <ReelGrid active={activeTab === "reels"} />
+          {/* <ReelGrid active={activeTab === "reels"} /> */}
+
+
+          {activeTab === "reels" && (
+            
+            <div ref={ref} className="space-y-200 z -4">
+
+                {savedPosts.map((savedPost, index) => (
+
+
+                  <motion.div
+                    key={index}
+                    
+                  >
+
+                    {savedPosts.m?.properties?.name}
+                    <PostCard post={savedPost.m.properties} />
+                    <br></br>
+                    <br></br>
+
+                  </motion.div>
+                ))}
+          </div>
+          
+          )
+          }
         </TabsContent>
       </Tabs>
     </main>
