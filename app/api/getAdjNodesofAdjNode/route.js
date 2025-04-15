@@ -15,15 +15,7 @@ export async function POST(req) {
       AdjNodesofAdjNodeEdgeWhere = {},
     } = await req.json();
 
-    console.log("label:", label);
-    console.log("where:", where);
-    console.log("edgeLabel:", edgeLabel);
-    console.log("edgeWhere:", edgeWhere);
-    console.log("adjacentNodeLabel:", adjNodeLabel);
-    console.log("adjWhere:", adjWhere);
-    console.log("AdjNodesofAdjNodeLabel:", AdjNodesofAdjNodeLabel);
-    console.log("AdjNodesofAdjNodeEdgeLabel:", AdjNodesofAdjNodeEdgeLabel);
-    console.log("AdjNodesofAdjNodeEdgeWhere:", AdjNodesofAdjNodeEdgeWhere);
+
 
     const response = await getAdjacentNodesOfAdjNode(
       label,

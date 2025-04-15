@@ -1,9 +1,17 @@
 
 import neo4j from "neo4j-driver";
 
-const URI = process.env.URI;
-const USER = process.env.USERNAME;
-const PASSWORD = process.env.PASSWORD;
+// const URI = process.env.URI;
+// const USER = process.env.USERNAME;
+// const PASSWORD = process.env.PASSWORD;
+
+
+
+
+const URI = process.env.NEO4J_URI; // e.g., neo4j+s://<your-database-id>.databases.neo4j.io
+const USER = process.env.NEO4J_USERNAME; // usually 'neo4j'
+const PASSWORD = process.env.NEO4J_PASSWORD; // your Aura-generated password
+
 
 const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
 (async () => {
@@ -16,6 +24,13 @@ const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
     process.exit(1);
   }
 })();
+
+
+
+
+
+
+
 
 export const getWholeGraph = async () => {
   const session = driver.session();
