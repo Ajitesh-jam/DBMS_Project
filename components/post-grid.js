@@ -25,7 +25,17 @@ export default function PostGrid({ active, posts }) {
   return (
     <div className="grid grid-cols-3 gap-1 md:gap-4">
       {posts &&
-        posts.map((post, index) => (
+        posts
+        .filter((post) => {
+          const visibility = post.m?.properties?.visibility;
+          const isFriend = post.isFriendPost;
+    
+          // Show:
+          // - Own posts (not friend posts) => always show
+          // - Friend posts => only show if visibility !== 0
+          return !isFriend || (isFriend && visibility !== 0);
+        })
+        .map((post, index) => (
           <motion.div
             key={post.id}
             className="relative aspect-square group cursor-pointer"
