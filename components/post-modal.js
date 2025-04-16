@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { X, MoreVertical, Trash, Info, Edit } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import useUsers from "@/hooks/user.zustand";
+import { useRouter } from "next/navigation"
 export default function PostModal({ open, onClose, post, onDelete }) {
   const [showOptions, setShowOptions] = useState(false);
   const user = useUsers((state) => state.selectedUser);
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const router = useRouter();
   const handleDelete = async () => {
     try {
       const response = await fetch("/api/deleteAdjacentNode", {
@@ -37,6 +38,12 @@ export default function PostModal({ open, onClose, post, onDelete }) {
     } catch (error) {
       console.error("Error deleting post:", error);
     }
+  };
+
+  const handleBack = () => {
+    const query = new URLSearchParams({ postName: post.m?.properties.name }).toString();
+    console.log("Query:",post.m?.properties.name)
+  router.push(`/editPost?${query}`);
   };
 
   return (
@@ -73,7 +80,7 @@ export default function PostModal({ open, onClose, post, onDelete }) {
                   {isDeleting ? "Deleting..." : "Delete"}
                 </button>
                 <button
-                  onClick={() => alert("Edit feature coming soon!")}
+                  onClick={handleBack}
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Edit className="h-4 w-4 mr-2" />
