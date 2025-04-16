@@ -2,9 +2,12 @@ import neo4j from "neo4j-driver";
 
 // Export runQuery helper
 export async function runQuery(query, params = {}) {
-    const URI = process.env.URI;
-    const USER = process.env.USERNAME;
-    const PASSWORD = process.env.PASSWORD;
+    // const URI = process.env.URI;
+    // const USER = process.env.USERNAME;
+    // const PASSWORD = process.env.PASSWORD;
+    const URI = process.env.NEO4J_URI;
+    const USER = process.env.NEO4J_USERNAME;
+    const PASSWORD = process.env.NEO4J_PASSWORD;
 
    
     if (!URI || !USER || !PASSWORD) {
