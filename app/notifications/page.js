@@ -10,10 +10,10 @@ export default function NotificationPage() {
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(false);
   const user = useUsers((state) => state.selectedUser);
-  const setNewUser = useUsers((state) => state.setNewUser);
+  
   const [followRequestProps, setFollowRequestProps] = useState({});
 
-  // ✅ Fetch Invitations on Page Load
+
   useEffect(() => {
     async function fetchInvitations() {
       try {
@@ -100,38 +100,8 @@ export default function NotificationPage() {
       alert("Follow request approved successfully!");
       const oldFollowersCount = toNativeNumber(user?.followerscount);
       console.log("Old followers count:", oldFollowersCount);
-      //edit the node as to increment the followers count
-      const incrementfollowers = await fetch("/api/updateNode", {
-        method: "POST",
-        headers: {
-        "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-        label: ["USER"],
-        where: { name: user.name, email: user.email },
-        updates: {
-          followerscount: oldFollowersCount + 1,
-        },
-        }),
-      })
-        .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json(); // Parse JSON correctly
-        })
-        .then((res) => {
-        console.log("Updated user followers count:", res);
-        setNewUser({
-          ...user,
-          followerscount: toNativeNumber(res.data.followerscount),
-        });
-        console.log("Updated user data:", user);
-        })
-        .catch((error) => console.error("Error updating posts count:", error));
+     
 
-
-      // ✅ Remove approved invitation from the list
       setInvitations((prev) =>
         prev.filter((inv) => inv.n?.properties?.name !== invitation.n?.properties?.name)
       );
@@ -142,7 +112,7 @@ export default function NotificationPage() {
     }
   };
 
-  // ❌ Handle Reject Invitation
+
   const handleReject = async (invitation) => {
     try {
       setLoading(true);
@@ -168,7 +138,7 @@ export default function NotificationPage() {
 
       alert("Invitation rejected.");
 
-      // ✅ Update the UI to remove rejected invitation
+
       setInvitations((prev) =>
         prev.filter((inv) => inv.n?.properties?.name !== invitation.n?.properties?.name)
       );

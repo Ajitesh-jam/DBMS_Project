@@ -1,40 +1,40 @@
-
 import neo4j from "neo4j-driver";
 
-// const URI = process.env.URI;
-// const USER = process.env.USERNAME;
-// const PASSWORD = process.env.PASSWORD;
 
 
 
+// Export runQuery helper
+export async function runQuery(query, params = {}) {
+    const URI = process.env.URI;
+    const USER = process.env.USERNAME;
+    const PASSWORD = process.env.PASSWORD;
 
-const URI = process.env.NEO4J_URI; // e.g., neo4j+s://<your-database-id>.databases.neo4j.io
-const USER = process.env.NEO4J_USERNAME; // usually 'neo4j'
-const PASSWORD = process.env.NEO4J_PASSWORD; // your Aura-generated password
-
-
-const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
-(async () => {
-  try {
-    const serverInfo = await driver.getServerInfo();
-    console.log("Connection established to Neo4j");
-    console.log(serverInfo);
-  } catch (err) {
-    console.error(`Connection error\n${err}\nCause: ${err.cause}`);
-    process.exit(1);
-  }
-})();
+    console.log("Neo4j config:", { URI, USER });
+    if (!URI || !USER || !PASSWORD) {
+    throw new Error("Missing Neo4j connection environment variables");
+    }
 
 
-
-export const getWholeGraph = async () => {
+    const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
   const session = driver.session();
   try {
-    const result = await session.run("MATCH (n) RETURN n");
-    const graph = result.records.map((record) => record.get("n").properties);
+    const result = await session.run(query, params);
+    return result.records.map((record) => record.toObject());
+  } catch (err) {
+    console.error("Query Error:", err);
+    throw err;
+  } finally {
+    await session.close();
+  }
+}
+
+export const getWholeGraph = async () => {
+  //const session = driver.session();
+  try {
+     return await runQuery(`MATCH (n) RETURN n`);
     //res.json(graph);
     //res.json(result);
-    return graph;
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching graph" });
@@ -43,21 +43,6 @@ export const getWholeGraph = async () => {
   }
 };
 
-
-
-
-async function runQuery(query, params = {}) {
-  const session = driver.session();
-  try {
-    const result = await session.run(query, params);
-    return result.records.map((record) => record.toObject());
-  } catch (err) {
-    console.error("Query Error: ", err);
-    throw err;
-  } finally {
-    await session.close();
-  }
-}
 
 export const getNodeByLabel = async (label, where = {}) => {
   console.log("getNodeByLabel where:", where);

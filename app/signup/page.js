@@ -56,7 +56,7 @@ export default function SignupPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess] = useState(false);
 
   const setUser = useUsers((state) => state.setNewUser);
 

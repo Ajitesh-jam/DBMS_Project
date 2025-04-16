@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import Image from "next/image";
+
 import { Input } from "@/components/ui/input";
 export default function Explore() {
   const [users, setUsers] = useState([]);
