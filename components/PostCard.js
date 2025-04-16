@@ -319,7 +319,7 @@ export default function PostCard({ post }) {
     >
       <div className="p-4 flex items-center">
         <Image
-          src={user.imageUrl || "/placeholder.svg"}
+          src={user.imageURL || "/placeholder.svg"}
           alt = "/placeholder.svg"
           width={40}
           height={40}
@@ -335,7 +335,7 @@ export default function PostCard({ post }) {
 
       <div className="relative aspect-square">
         <Image
-          src={post?.imageUrl || "/placeholder.svg"}
+          src={post?.imageURL || "/placeholder.svg"}
           alt = "/placeholder.svg"
           fill
           style={{ objectFit: "cover" }}

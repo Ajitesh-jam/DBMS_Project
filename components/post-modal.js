@@ -144,7 +144,7 @@ export default function PostModal({ open, onClose, post }) {
             {/* Image container */}
             <div className="relative bg-black flex items-center justify-center">
               <motion.img
-                src={post.m?.properties?.imageUrl || "/placeholder.svg"}
+                src={post.m?.properties?.imageURL || "/placeholder.svg"}
                 alt={`Post ${post.id}`}
                 className="w-full max-h-[50vh] object-contain"
                 initial={{ opacity: 0 }}

@@ -117,11 +117,11 @@ export default function SignupPage() {
     }
 
     // Image URL validation
-    if (!formData.imageUrl) {
-      newErrors.imageUrl = "Profile image is required";
+    if (!formData.imageURL) {
+      newErrors.imageURL = "Profile image is required";
       valid = false;
     } else {
-      newErrors.imageUrl = "";
+      newErrors.imageURL = "";
     }
 
     setErrors(newErrors);
@@ -170,7 +170,7 @@ export default function SignupPage() {
         password: hashedPassword, // Send hashed password
         phone: formData.phone,
         email: formData.email,
-        imageUrl: formData.imageUrl,
+        imageUrl: formData.imageURL,
         dob: formData.dob,
         bio: formData.bio,
         followerscount: 0,
@@ -518,13 +518,13 @@ export default function SignupPage() {
                       // accept="image/*"
                       //onChange={handleImageUpload}
                       onChange={handleChange}
-                      value={formData.imageUrl}
+                      value={formData.imageURL}
                       placeholder="Upload your image and give its URL"
                       className={`pr-10 ${
-                        errors.imageUrl ? "border-destructive" : ""
+                        errors.imageURL ? "border-destructive" : ""
                       }`}
                     />
-                    {formData.imageUrl && (
+                    {formData.imageURL && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -533,13 +533,13 @@ export default function SignupPage() {
                         <Check size={14} /> Image got successfully
                       </motion.div>
                     )}
-                    {errors.imageUrl && (
+                    {errors.imageURL && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="text-destructive text-sm mt-1 flex items-center gap-1"
                       >
-                        <X size={14} /> {errors.imageUrl}
+                        <X size={14} /> {errors.imageURL}
                       </motion.div>
                     )}
                   </div>

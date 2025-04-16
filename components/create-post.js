@@ -148,7 +148,7 @@ export default function CreatePost() {
     try {
       // Prepare post data
       const postData = {
-        imageUrl: formData.imageUrl,
+        imageUrl: formData.imageURL,
         description: formData.description,
         hashtags: formData.hashtags
           .split(" ")

@@ -128,7 +128,7 @@ export default function Navbar() {
                 <motion.div className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href={`/profile`}>
                     <img
-                      src={user.imageUrl || "/placeholder.svg"}
+                      src={user.imageURL || "/placeholder.svg"}
                       alt={user.name}
                       className="h-10 w-10 rounded-full border border-gray-300 dark:border-gray-700"
                     />
