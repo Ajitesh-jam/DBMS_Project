@@ -129,6 +129,7 @@ export default function FriendProfilePage({ params }) {
             id: Math.floor(Math.random() * 1000),
             likes: Math.floor(Math.random() * 1000),
             comments: Math.floor(Math.random() * 100),
+            isFriendPost: true,
           }));
 
           setPosts(enhancedPosts);

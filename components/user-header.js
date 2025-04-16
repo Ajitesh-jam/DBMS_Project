@@ -7,10 +7,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toNativeNumber } from "../app/api/connection/neo";
+import useUser from "@/hooks/user.zustand"
 
 export default function UserHeader({ user }) {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing);
-
+  const logout = useUser((state) => state.removeUser)
   const toggleFollow = () => {
     setIsFollowing(!isFollowing);
   };
@@ -19,6 +20,55 @@ export default function UserHeader({ user }) {
     console.log("User in header: ", user);
   }, [user]);
   const router = useRouter();
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete user node
+      const response = await fetch("/api/deleteNode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          label: "USER",
+          where: { name: user.name, email: user.email },
+        }),
+      });
+  
+      if (!response.ok) {
+        console.error("Failed to delete user node");
+        return;
+      }
+  
+      // Delete user's posts
+      const adjacentResponse = await fetch("/api/deleteAdjacentNode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          startNodeLabel: "USER",
+          startNodeWhere: { name: user.name, email: user.email },
+          endNodeLabel: "POST",
+          endNodeWhere: {},
+          edgeLabel: "POSTED_BY",
+        }),
+      });
+  
+      if (!adjacentResponse.ok) {
+        console.error("Failed to delete adjacent posts");
+        return;
+      }
+  
+      console.log("Account and posts deleted successfully");
+      logout(); // remove user from zustand
+      router.push("/"); // redirect to homepage or login
+    } catch (err) {
+      console.error("Error deleting account:", err);
+    }
+  }
+  
+
 
   return (
     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
@@ -35,23 +85,28 @@ export default function UserHeader({ user }) {
           <h1 className="text-xl font-bold">{user.name}</h1>
           <div className="flex gap-2">
             <Button
-              variant={isFollowing ? "outline" : "default"}
-              onClick={toggleFollow}
+
+              onClick={() => { router.push("/editProfile") }} // Navigate to Edit Profile
               className="h-9"
             >
-              {isFollowing ? (
-                <>
-                  <UserCheck className="h-4 w-4 mr-2" />
-                  Following
-                </>
-              ) : (
+              {
                 <>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Edit Profile
                 </>
-              )}
+              }
             </Button>
             
+            <Button
+
+              onClick={handleDeleteAccount}
+              className="h-9 flex items-center justify-center "
+            >
+              {<>
+                <div className="h-4 w-4" /> {/* Placeholder/icon size */}
+                <span>Delete my Account</span>
+              </>}
+            </Button>
           </div>
         </div>
 
@@ -85,4 +140,4 @@ export default function UserHeader({ user }) {
       </div>
     </div>
   );
-}
+};

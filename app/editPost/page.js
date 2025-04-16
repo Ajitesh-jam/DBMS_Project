@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -10,30 +10,89 @@ import { Input } from "@/components/ui/input"
 import { MapPin, Smile, ArrowLeft } from "lucide-react"
 import useUsers from "@/hooks/user.zustand"
 import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation";
 
 export default function CreatePost() {
-  const [imageUrl, setImageUrl] = useState("")
+
+    const searchParams = useSearchParams();
+    const postName = searchParams.get("postName");
+    const [post, setPostData] = useState({
+    description: "",
+    imageUrl: "",
+    location: "",
+    name: "",
+    postedBy: "",
+    visibility: "",
+    });
+    
+    console.log("Post:", postName);
+    const user = useUsers((state) => state.selectedUser) || { name: "", email: "", location: "" };
+    const [imageUrl, setImageUrl] = useState("")
+    
+    const [imageUrlInput, setImageUrlInput] = useState(""); // for user typing
+    const [shouldShowImage, setShouldShowImage] = useState(false);
+    useEffect(() => {
+        const fetchPost = async () => {
+          try {
+            console.log("Post:", postName);
+            const response = await fetch("/api/getAdjNodeByLabel", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                label: ["USER"],
+                where: { name: user.name, email: user.email },
+                edgeLabel: ["POSTED_BY"],
+                edgeWhere: [],
+                adjNodeLabel: ["POST"],
+                adjWhere: { name: postName },
+              }),
+            });
+      
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+      
+            const data = await response.json();
+            console.log("data:", data);
+            setPostData(data[0]?.m?.properties);
+            setVisibility(data[0]?.m?.properties?.visibility);
+            setLocation(data[0]?.m?.properties?.location);
+            setDescription(data[0]?.m?.properties?.description);
+
+            console.log("properties:", data[0]?.m?.properties);
+          } catch (error) {
+            console.error("Error:", error);
+          }
+        };
+      
+        fetchPost();
+      }, [postName, user]);
+    
+  
   const [visibility, setVisibility] = useState(false)
   const [description, setDescription] = useState("")
-  const [location, setLocation] = useState("")
+  const [location, setLocation] = useState(user.location)
   const [isValidImage, setIsValidImage] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter();
   // Handle Image URL Change
   const handleImageUrlChange = (e) => {
-    setImageUrl(e.target.value)
-    setIsValidImage(true)
-  }
-  const user= useUsers((state)=> (state.selectedUser))
-
- 
-
+    setImageUrl(e.target.value);
+    setIsValidImage(true);
+    
+  };
+  
+  
 
 
   const handleImageLoad = () => {
     setIsLoading(false)
   }
-
+  
+  
+  
 
   const handleImageError = () => {
     setIsLoading(false)
@@ -45,7 +104,8 @@ export default function CreatePost() {
     if (imageUrl) {
       setIsLoading(true)
     }
-  }
+  } 
+  
 
   // Get Current Location
   const handleAddLocation = () => {
@@ -65,126 +125,56 @@ export default function CreatePost() {
     }
   }
 
-  async function handleSubmit() {
-
-    if (user.name === "Dummy User" || user.name === "") {
-      alert("Please login to create a post")
-      return
-    }
-    if (!imageUrl) {
-      alert("Please Give image")
-      return
-    }
-
-    // Handle form submission logic here
-    console.log("Image URL:", imageUrl)
-    console.log("Description:", description)
-    console.log("Location:", location)
-
-
-
-    const posts = await fetch("/api/getAdjNodeByLabel", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        label: ["USER"],
-        where: { "name": user.name, "email": user.email },
-        edgeLabel: ["POSTED_BY"],
-        edgeWhere: [],
-        adjNodeLabel: ["POST"],
-        adjWhere: [],
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        console.log("Response:", response);
-        return response.json(); // Parse JSON correctly
-
-      })
-      .then((data) => {
-        console.log("post :", data);
-        return data;
-
-      })
-      .catch((error) => console.error("Error:", error));
-
-    // Reset fields after submission
-    console.log("Posts:", posts);
-    const postCount = posts.length|| 0;
-    const newPostName = `${postCount + 1}`;
-    console.log("New Post Name:", newPostName);
-
-
-    await fetch("/api/createAdjacentNode", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        startNodeLabel: ["USER"],
-        startNodeWhere: { "name": user.name, "email": user.email },
-        endNodeLabel: ["POST"],
-        endNodeWhere: {
-          "name": newPostName, "imageUrl": imageUrl, "description": description,
-          "location": location, postedBy: user.name,"visibility": visibility
+  
+  async function handleUpdate() {
+    try {
+      // Validate inputs
+      if (!imageUrl) {
+        alert("Please provide an image URL");
+        return;
+      }
+      
+      console.log("Image URL:", imageUrl);
+      console.log("Description:", description);
+      console.log("Location:", location);
+      
+      const response = await fetch("/api/updateAdjacentNode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        edgeLabel: "POSTED_BY",
-        properties: {
-        },
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json(); // Parse JSON correctly
-      })
-      .then((data) => console.log(data))
-      .catch((error) => console.error("Error:", error));
-    // Reset fields after submission
-
-    // const incrementPostsResponse = await fetch("/api/updateNode", {
-    //   method: "POST",
-    //   headers: {
-    //   "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //   label: ["USER"],
-    //   where: { name: user.name, email: user.email },
-    //   updates: {
-    //     posts: postCount + 1,
-    //   },
-    //   }),
-    // })
-    //   .then((response) => {
-    //   if (!response.ok) {
-    //     throw new Error(`HTTP error! Status: ${response.status}`);
-    //   }
-    //   return response.json(); // Parse JSON correctly
-    //   })
-    //   .then((res) => {
-    //   console.log("Updated user posts count:", res);
-    //   console.log("Set new user:", user);
-    //   setNewUser({
-    //     ...user,
-    //     posts: res.data.posts,
-    //   });
-    //   console.log("Updated user data:", user);
-    //   })
-    //   .catch((error) => console.error("Error updating posts count:", error));
-    
-
-    setImageUrl("")
-    setDescription("")
-    setLocation("")
-
-    router.push("/profile")
+        body: JSON.stringify({
+          startNodeLabel: "USER", // Changed from array to string
+          startNodeWhere: { "name": user.name, "email": user.email },
+          endNodeLabel: "POST", // Changed from array to string
+          endNodeWhere: { name: postName },
+          edgeLabel: "POSTED_BY",
+          updates: { 
+            "imageUrl": imageUrl, 
+            "description": description,
+            "location": location,
+            "visibility": visibility
+          }
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server response:", errorText);
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Update successful:", data);
+      
+      // Navigate to profile page
+      router.push("/profile");
+    } catch (error) {
+      console.error("Error updating post:", error);
+      // Provide user feedback
+      alert(`Failed to update post: ${error.message}. Please try again.`);
+    }
   }
-
   async function handleBack() {
     router.push("/profile");
   }
@@ -196,7 +186,7 @@ export default function CreatePost() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <h1 className="text-lg font-semibold">Create new post</h1>
-        <Button onClick={handleSubmit} variant="link" className="text-blue-500 font-semibold">
+        <Button onClick={handleUpdate} variant="link" className="text-blue-500 font-semibold">
 
           Share
 
@@ -281,7 +271,7 @@ export default function CreatePost() {
                 />
                 <div className="flex justify-between items-center mt-2">
                   <Smile className="w-5 h-5 text-gray-400" />
-                  <span className="text-xs text-gray-400">{description.length}/2,200</span>
+                  <span className="text-xs text-gray-400">{description?.length}/2,200</span>
                 </div>
               </div>
 
