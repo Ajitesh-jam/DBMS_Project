@@ -459,6 +459,8 @@ export const getAdjacentNodesOfAdjNode = async (
   return await runQuery(query,params);
 };
 
+let nodeCreationCounter = 0; // Counter to track the number of nodes created
+
 export const createNode = async (labels, properties) => {
   // Convert labels into a string format
   const labelString = labels.join(":"); // Example: ["Person", "Employee"] → "Person:Employee"
@@ -478,8 +480,26 @@ export const createNode = async (labels, properties) => {
   const query = `CREATE (n:${labelString} { ${propsString} }) RETURN n`;
   console.log("Final Cypher Query:", query);
 
-  return await runQuery(query, properties);
+  const result = await runQuery(query, properties);
+
+  // Increment the node creation counter
+  nodeCreationCounter++;
+
+  // Call incremental PageRank for the newly created node
+  if (result.length > 0) {
+    const newNodeId = result[0].n.identity.toNumber();
+    await incrementalPageRank(newNodeId);
+  }
+
+  // Call full PageRank after every 100 nodes
+  if (nodeCreationCounter % 100 === 0) {
+    await calculatePageRank();
+  }
+
+  return result;
 };
+
+let edgeCreationCounter = 0; // Counter to track the number of edges created
 
 export const createEdge = async (
   startNodeLabel,
@@ -548,6 +568,24 @@ export const createEdge = async (
 
     // ✅ Run query using runQuery function
     const result = await runQuery(query, params);
+
+    // Increment the edge creation counter
+    edgeCreationCounter++;
+
+    // Call incremental PageRank for the newly created edge
+    if (result.length > 0) {
+      const newEdge = {
+        sourceNodeId: result[0].e.start.toNumber(),
+        targetNodeId: result[0].e.end.toNumber(),
+      };
+      await incrementalPageRank(null, newEdge);
+    }
+
+    // Call full PageRank after every 100 edges
+    if (edgeCreationCounter % 100 === 0) {
+      await calculatePageRank();
+    }
+
     return result;
   } catch (error) {
     console.error("❌ Error creating edge:", error);
