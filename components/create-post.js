@@ -26,7 +26,7 @@ import {
 export default function CreatePost() {
   const [formData, setFormData] = useState({
     image: null,
-    imageUrl: "",
+    imageURL: "",
     description: "",
     hashtags: "",
   });
@@ -99,7 +99,7 @@ export default function CreatePost() {
         const fakeUrl = `https://drive.google.com/fake-post-image-${Date.now()}.jpg`;
         setFormData((prev) => ({
           ...prev,
-          imageUrl: fakeUrl,
+          imageURL: fakeUrl,
         }));
       }, 1000);
 
@@ -115,7 +115,7 @@ export default function CreatePost() {
     setFormData((prev) => ({
       ...prev,
       image: null,
-      imageUrl: "",
+      imageURL: "",
     }));
     setPreviewUrl("");
   };
@@ -148,7 +148,7 @@ export default function CreatePost() {
     try {
       // Prepare post data
       const postData = {
-        imageUrl: formData.imageURL,
+        imageURL: formData.imageURL,
         description: formData.description,
         hashtags: formData.hashtags
           .split(" ")
@@ -165,7 +165,7 @@ export default function CreatePost() {
           // Reset form after success
           setFormData({
             image: null,
-            imageUrl: "",
+            imageURL: "",
             description: "",
             hashtags: "",
           });

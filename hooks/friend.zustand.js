@@ -6,7 +6,7 @@ const initialState = {
   selectedFriend: {
     name: "Dummy Friend",
     DOB: "2-34-2224",
-    imageUrl:
+    imageURL:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzgh0Pd-fCG2LnUPP92d1DP7y2cdnugqFXyw&s",
     email: "default@gmail.com",
     phone: "0000000000",

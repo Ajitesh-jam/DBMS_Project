@@ -22,7 +22,7 @@ function CreatePost() {
     
     console.log("Post:", postName);
     const user = useUsers((state) => state.selectedUser) || { name: "", email: "", location: "" };
-    const [imageUrl, setImageUrl] = useState("")
+    const [imageURL, setImageUrl] = useState("")
     
     // const [imageUrlInput, setImageUrlInput] = useState(""); // for user typing
     // const [shouldShowImage, setShouldShowImage] = useState(false);
@@ -91,7 +91,7 @@ function CreatePost() {
 
 
   const loadImage = () => {
-    if (imageUrl) {
+    if (imageURL) {
       setIsLoading(true)
     }
   } 
@@ -119,12 +119,12 @@ function CreatePost() {
   async function handleUpdate() {
     try {
       // Validate inputs
-      if (!imageUrl) {
+      if (!imageURL) {
         alert("Please provide an image URL");
         return;
       }
       
-      console.log("Image URL:", imageUrl);
+      console.log("Image URL:", imageURL);
       console.log("Description:", description);
       console.log("Location:", location);
       
@@ -140,7 +140,7 @@ function CreatePost() {
           endNodeWhere: { name: postName },
           edgeLabel: "POSTED_BY",
           updates: { 
-            "imageUrl": imageUrl, 
+            "imageURL": imageURL, 
             "description": description,
             "location": location,
             "visibility": visibility
@@ -190,27 +190,27 @@ function CreatePost() {
           <div className="flex flex-1 overflow-hidden">
             {/* Image preview area */}
             <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
-              {!imageUrl && (
+              {!imageURL && (
                 <div className="text-center p-6">
                   <div className="mb-4 text-gray-400">Enter an image URL to preview</div>
                   <Input
                     type="text"
                     placeholder="Paste image URL here"
                     className="max-w-md bg-gray-800 border-gray-700"
-                    value={imageUrl}
+                    value={imageURL}
                     onChange={handleImageUrlChange}
                   />
                   <Button
                     className="mt-4 bg-blue-500 hover:bg-blue-600"
                     onClick={loadImage}
-                    disabled={!imageUrl}
+                    disabled={!imageURL}
                   >
                     Load Image
                   </Button>
                 </div>
               )}
 
-              {imageUrl && (
+              {imageURL && (
                 <>
                   {isLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -228,7 +228,7 @@ function CreatePost() {
                   ) : (
                     <div className="relative w-full h-full">
                       <Image
-                        src={imageUrl || "/placeholder.svg"}
+                        src={imageURL || "/placeholder.svg"}
                         alt="Post preview"
                         fill
                         className="object-contain"

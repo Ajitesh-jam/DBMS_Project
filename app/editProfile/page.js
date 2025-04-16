@@ -39,7 +39,7 @@ export default function EditProfile() {
     confirmPassword: "",
     phone: user.phone,
     email: user.email,
-    imageUrl: user.imageURL,
+    imageURL: user.imageURL,
     bio: user.bio	,
     dob: user.dob,
     gender: user.gender,
@@ -51,7 +51,7 @@ export default function EditProfile() {
     confirmPassword: "",
     phone: "",
     email: "",
-    imageUrl: "",
+    imageURL: "",
     bio: "",
     dob: "",
     gender: "",
@@ -148,7 +148,7 @@ export default function EditProfile() {
   //   //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
   //   //     setFormData((prev) => ({
   //   //       ...prev,
-  //   //       imageUrl: fakeUrl,
+  //   //       imageURL: fakeUrl,
   //   //     }));
   //   //   }, 1000);
   //   // }
@@ -172,7 +172,7 @@ export default function EditProfile() {
         password: hashedPassword, // Send hashed password
         phone: formData.phone,
         email: formData.email,
-        imageUrl: formData.imageURL,
+        imageURL: formData.imageURL,
         dob: formData.dob,
         bio: formData.bio,
 
@@ -500,9 +500,9 @@ export default function EditProfile() {
                   </Label>
                   <div className="relative">
                     <Input
-                      id="imageUrl"
+                      id="imageURL"
                       type="url"
-                      name="imageUrl"
+                      name="imageURL"
                       // accept="image/*"
                       //onChange={handleImageUpload}
                       onChange={handleChange}

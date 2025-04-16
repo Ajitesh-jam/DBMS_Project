@@ -37,7 +37,7 @@ export default function SignupPage() {
     confirmPassword: "",
     phone: "",
     email: "",
-    imageUrl: "",
+    imageURL: "",
     bio: "",
     dob: "",
     gender: "",
@@ -49,7 +49,7 @@ export default function SignupPage() {
     confirmPassword: "",
     phone: "",
     email: "",
-    imageUrl: "",
+    imageURL: "",
     bio: "",
     dob: "",
     gender: "",
@@ -136,22 +136,7 @@ export default function SignupPage() {
     }));
   };
 
-  // const handleImageUpload = (e) => {
-  //   // In a real app, this would upload to a storage service
-  //   // For this example, we'll just set the URL directly
-  //   // const file = e.target.files[0];
-  //   // if (file) {
-  //   //   // Simulate upload and getting a URL back
-  //   //   setTimeout(() => {
-  //   //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
-  //   //     setFormData((prev) => ({
-  //   //       ...prev,
-  //   //       imageUrl: fakeUrl,
-  //   //     }));
-  //   //   }, 1000);
-  //   // }
-  //   //set;
-  // };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -170,7 +155,7 @@ export default function SignupPage() {
         password: hashedPassword, // Send hashed password
         phone: formData.phone,
         email: formData.email,
-        imageUrl: formData.imageURL,
+        imageURL: formData.imageURL,
         dob: formData.dob,
         bio: formData.bio,
         followerscount: 0,
@@ -512,9 +497,9 @@ export default function SignupPage() {
                   </Label>
                   <div className="relative">
                     <Input
-                      id="imageUrl"
+                      id="imageURL"
                       type="url"
-                      name="imageUrl"
+                      name="imageURL"
                       // accept="image/*"
                       //onChange={handleImageUpload}
                       onChange={handleChange}
