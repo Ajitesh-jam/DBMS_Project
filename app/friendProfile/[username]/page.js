@@ -6,18 +6,23 @@ import FriendHeader from "@/components/friend-header";
 
 import PostGrid from "@/components/post-grid";
 
-import useFriends from "@/hooks/friend.zustand";
+;
 
 import useUsers from "@/hooks/user.zustand";
 import { use } from "react";
+
+
+
+
+
 
 export default function FriendProfilePage({ params }) {
   const { username } = use(params);
 
   const [activeTab, setActiveTab] = useState("posts");
   const [posts, setPosts] = useState([]);
-  const Friend = useFriends((state) => state.selectedFriend);
-  const setFriend = useFriends((state) => state.setNewFriend);
+  const [Friend , setFriend] = useState({}); // State to hold friend data
+  
   const user = useUsers((state) => state.selectedUser);
 
 
@@ -25,6 +30,12 @@ export default function FriendProfilePage({ params }) {
 
   useEffect(() => {
     console.log("Friend in FriendProfilePage:", username);
+
+
+    const decodedUsername = decodeURIComponent(username);
+    
+    console.log("Decoded username:", decodedUsername);
+    
 
     async function fetchFriend() {
       try {
@@ -35,7 +46,7 @@ export default function FriendProfilePage({ params }) {
           },
           body: JSON.stringify({
             label: ["USER"],
-            where: { name: username },
+            where: { name: decodedUsername },
           }),
         });
         if (!response.ok) {
@@ -139,8 +150,6 @@ export default function FriendProfilePage({ params }) {
         console.error("Error fetching posts:", error);
       }
     }
-
-
 
     if (Friend.name) {
       fetchPosts();

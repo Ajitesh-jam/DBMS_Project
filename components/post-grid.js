@@ -47,14 +47,14 @@ export default function PostGrid({ active, posts }) {
             onClick={() => handlePostClick(post)}
           >
             
-            {/* ✅ Post Image */}
+
             <img
               src={post.m?.properties?.imageUrl || "/placeholder.svg"}
               alt={`Post ${post.id}`}
               className="object-cover w-full h-full"
             />
 
-            {/* ✅ Overlay with Like/Comment Info */}
+       
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white">
               <motion.div
                 className="flex items-center gap-1"
@@ -75,8 +75,7 @@ export default function PostGrid({ active, posts }) {
                 <span>{post.comments}</span>
               </motion.div>
             </div>
-
-            {/* ✅ 3-Dot More Options Icon */}
+            
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -90,7 +89,7 @@ export default function PostGrid({ active, posts }) {
         ))
         }
         
-      {/* ✅ Post Modal to Show Larger View + Options */}
+
       {selectedPost && (
         <PostModal
           open={modalOpen}

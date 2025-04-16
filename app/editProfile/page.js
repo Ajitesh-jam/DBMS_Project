@@ -20,8 +20,8 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
+  // CardDescription,
+  // CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -29,7 +29,7 @@ import FloatingIcons from "@/components/floating-icons";
 
 import useUsers from "@/hooks/user.zustand";
 
-export default function editProfile() {
+export default function EditProfile() {
     const user = useUsers((state) => state.selectedUser);
     console.log("User:",user);
   const router = useRouter();
@@ -138,22 +138,22 @@ export default function editProfile() {
     }));
   };
 
-  const handleImageUpload = (e) => {
-    // In a real app, this would upload to a storage service
-    // For this example, we'll just set the URL directly
-    // const file = e.target.files[0];
-    // if (file) {
-    //   // Simulate upload and getting a URL back
-    //   setTimeout(() => {
-    //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
-    //     setFormData((prev) => ({
-    //       ...prev,
-    //       imageUrl: fakeUrl,
-    //     }));
-    //   }, 1000);
-    // }
-    //set;
-  };
+  // const handleImageUpload = (e) => {
+  //   // In a real app, this would upload to a storage service
+  //   // For this example, we'll just set the URL directly
+  //   // const file = e.target.files[0];
+  //   // if (file) {
+  //   //   // Simulate upload and getting a URL back
+  //   //   setTimeout(() => {
+  //   //     const fakeUrl = `https://drive.google.com/fake-image-${Date.now()}.jpg`;
+  //   //     setFormData((prev) => ({
+  //   //       ...prev,
+  //   //       imageUrl: fakeUrl,
+  //   //     }));
+  //   //   }, 1000);
+  //   // }
+  //   //set;
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

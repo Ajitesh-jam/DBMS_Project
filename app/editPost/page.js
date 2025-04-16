@@ -12,25 +12,20 @@ import useUsers from "@/hooks/user.zustand"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from "next/navigation";
 
-export default function CreatePost() {
+import { Suspense } from 'react'
+ 
+function CreatePost() {
 
     const searchParams = useSearchParams();
     const postName = searchParams.get("postName");
-    const [post, setPostData] = useState({
-    description: "",
-    imageUrl: "",
-    location: "",
-    name: "",
-    postedBy: "",
-    visibility: "",
-    });
+  
     
     console.log("Post:", postName);
     const user = useUsers((state) => state.selectedUser) || { name: "", email: "", location: "" };
     const [imageUrl, setImageUrl] = useState("")
     
-    const [imageUrlInput, setImageUrlInput] = useState(""); // for user typing
-    const [shouldShowImage, setShouldShowImage] = useState(false);
+    // const [imageUrlInput, setImageUrlInput] = useState(""); // for user typing
+    // const [shouldShowImage, setShouldShowImage] = useState(false);
     useEffect(() => {
         const fetchPost = async () => {
           try {
@@ -55,8 +50,8 @@ export default function CreatePost() {
             }
       
             const data = await response.json();
-            console.log("data:", data);
-            setPostData(data[0]?.m?.properties);
+
+
             setVisibility(data[0]?.m?.properties?.visibility);
             setLocation(data[0]?.m?.properties?.location);
             setDescription(data[0]?.m?.properties?.description);
@@ -83,16 +78,11 @@ export default function CreatePost() {
     setIsValidImage(true);
     
   };
-  
-  
 
 
   const handleImageLoad = () => {
     setIsLoading(false)
   }
-  
-  
-  
 
   const handleImageError = () => {
     setIsLoading(false)
@@ -179,6 +169,8 @@ export default function CreatePost() {
     router.push("/profile");
   }
   return (
+
+    <Suspense>
     <div className="flex flex-col h-screen bg-black text-white">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-800">
@@ -334,5 +326,16 @@ export default function CreatePost() {
 
 
     </div>
+  </Suspense>
   )
+}
+
+
+
+export default function EditPostPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-white">Loading post editor...</div>}>
+      <CreatePost />
+    </Suspense>
+  );
 }

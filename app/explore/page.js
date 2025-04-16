@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
+//import { Search } from "lucide-react";
 import Image from "next/image";
 
-import { Input } from "@/components/ui/input";
+//import { Input } from "@/components/ui/input";
 export default function Explore() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  //const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchAndSampleUsers = async () => {
@@ -90,7 +90,7 @@ export default function Explore() {
              
               <h2 className="text-black">NAME: {user.name}</h2>
               <p className="text-gray-500">PageRank: {user.pagerank}</p>
-              <p className="text-gray-700">Post: {user.post}</p>
+
             </motion.div>
           ))}
         </div>

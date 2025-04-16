@@ -11,9 +11,6 @@ import useUsers from "@/hooks/user.zustand";
 import { motion ,useAnimation,useInView } from "framer-motion";
 import PostCard from "@/components/PostCard";
 
-// Inside your JSX where UserHeader is rendered
-
-
 
 
 export default function UserProfilePage() {
@@ -66,7 +63,7 @@ export default function UserProfilePage() {
         }
 
         const fetchedPosts = await response.json();
-        console.log("Posts Response:", fetchedPosts);
+
 
         if (Array.isArray(fetchedPosts)) {
           const enhancedPosts = fetchedPosts.map((post) => ({
@@ -133,8 +130,6 @@ export default function UserProfilePage() {
     async function fetchFriendPosts() {
       try {
 
-
-
         const response = await fetch("/api/getAdjNodeByLabel", {
           method: "POST",
           headers: {
@@ -147,22 +142,23 @@ export default function UserProfilePage() {
             edgeWhere: {},
             adjNodeLabel: "POST",
             adjWhere: {},
-         
+        
           }),
         });
         if (!response.ok) {
           throw new Error("Error fetching friends posts.");
         }
-        console.log("saved posts response:", response);
         const data = await response.json();
-        console.log("saved Posts data:", data);
         setSavedPosts(data || []);
-      } catch (error) {
+        } catch (error) {
         console.error("Error loading followers:", error);
+      }
     }
-    }
-    
+
+    if (user?.name!=="Dummy User") { 
       fetchFriendPosts();
+    }
+
   
   }, [user]);
 

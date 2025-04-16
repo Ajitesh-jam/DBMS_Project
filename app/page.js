@@ -26,8 +26,6 @@ export default function Home() {
     async function fetchFriendPosts() {
       try {
 
-
-
         const response = await fetch("/api/getAdjNodesofAdjNode", {
           method: "POST",
           headers: {
@@ -95,7 +93,11 @@ return (
               },
             }}
           >
-            <PostCard post={post.adj.properties} />
+            {post.adj?.properties && (
+              
+              <PostCard post={post.adj?.properties} />
+            )}
+            
           </motion.div>
         ))}
       </div>

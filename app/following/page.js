@@ -5,18 +5,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useUsers from "@/hooks/user.zustand";
-import useFriends from "@/hooks/friend.zustand";
+
 import Image from "next/image";
 export default function FollowingPage() {
   const [following, setFollowing] = useState([]);
   const user = useUsers((state) => state.selectedUser); 
-  const setNewFriend = useFriends((state) => state.setNewFriend); 
+
   const router = useRouter();
 
 
   const handleUserSelect = (followingUser) => {
-    setNewFriend(followingUser.m?.properties); // Set selected friend's data
-    router.push(`/friendProfile`); // Navigate to friend profile
+
+    router.push(`/friendProfile/${followingUser.m?.properties?.name}`); // Navigate to friend profile
   };
 
 
@@ -50,7 +50,7 @@ export default function FollowingPage() {
       }
     }
 
-    if (user?.name) {
+    if (user?.name!=="Dummy User") {
       fetchFollowing();
     }
   }, [user]);
@@ -71,13 +71,20 @@ export default function FollowingPage() {
                 className="flex justify-between items-center border-b py-2"
               >
                 <div className="flex items-center gap-4">
+                  {
+                      followingUser.n?.properties?.
+                      imageURL &&
+
                   <Image
-                    src={
-                      followingUser.m?.properties?.imageUrl || "/avatar.png"
-                    }
-                    alt={followingUser.m?.properties?.name}
-                    className="w-10 h-10 rounded-full"
+                      src={follower.n?.properties?.imageURL + `?height=80&width=80`}
+                      width={80}
+                      height={80}
+                      priority={true}
+
+                      alt={follower.n?.properties?.name}
+                      className="w-10 h-10 rounded-full"
                   />
+                  }
                   <div>
                     <h4 className="text-sm font-medium">
                       {followingUser.m?.properties?.name}

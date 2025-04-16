@@ -11,8 +11,8 @@ export default function FollowersPage() {
     const [followers, setFollowers] = useState([]);
     const user = useUsers((state) => state.selectedUser);
     const router = useRouter();
-    const handleUserSelect = () => {
-        router.push(`/friendProfile`) // Navigate with query param
+    const handleUserSelect = (name) => {
+        router.push(`/friendProfile/${name}`) // Navigate with query param
       }
 
     useEffect(() => {
@@ -45,7 +45,7 @@ export default function FollowersPage() {
             }
         }
 
-        if (user?.name) {
+        if (user?.name!=="Dummy User") {
             fetchFollowers();
         }
     }, [user]);
@@ -66,13 +66,20 @@ export default function FollowersPage() {
                                 className="flex justify-between items-center border-b py-2"
                             >
                                 <div className="flex items-center gap-4">
+                                    {
+                                        follower.n?.properties?.
+                                        imageURL &&
+
                                     <Image
-                                        src={follower.n?.properties?.
-                                            imageUrl
-                                            || "/avatar.png"}
+                                        src={follower.n?.properties?.imageURL + `?height=80&width=80`}
+                                        width={80}
+                                        height={80}
+                                        priority={true}
+
                                         alt={follower.n?.properties?.name}
                                         className="w-10 h-10 rounded-full"
                                     />
+                                    }
                                     <div>
                                         <h4 className="text-sm font-medium">
                                             {follower.n?.properties?.name}
@@ -83,7 +90,7 @@ export default function FollowersPage() {
                                     </div>
                                 </div>
                                 <Button
-                                    onClick={() => handleUserSelect(follower.id)}
+                                    onClick={() => handleUserSelect(follower.n?.properties?.name)}
                                     className="text-blue-500 text-sm"
                                 >
                                     View Profile

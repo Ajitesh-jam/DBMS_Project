@@ -1,24 +1,25 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {  UserPlus, UserCheck } from "lucide-react";
-import { useState } from "react";
+import {  UserPlus } from "lucide-react";
+//import { useState } from "react";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { toNativeNumber } from "../app/api/connection/neo";
 import useUser from "@/hooks/user.zustand"
+import { useEffect ,useState} from "react";
 
 export default function UserHeader({ user }) {
-  const [isFollowing, setIsFollowing] = useState(user.isFollowing);
+  //const [isFollowing, setIsFollowing] = useState(user.isFollowing);
   const logout = useUser((state) => state.removeUser)
-  const toggleFollow = () => {
-    setIsFollowing(!isFollowing);
-  };
+  // const toggleFollow = () => {
+  //   setIsFollowing(!isFollowing);
+  // };
 
-  useEffect(() => {
-    console.log("User in header: ", user);
-  }, [user]);
+  const [noOfFollowers, setNoOfFollowers] = useState(0);
+  const [noOfFollowing, setNoOfFollowing] = useState(0);
+
+  
   const router = useRouter();
 
   const handleDeleteAccount = async () => {
@@ -67,6 +68,69 @@ export default function UserHeader({ user }) {
       console.error("Error deleting account:", err);
     }
   }
+
+  useEffect (() => {
+    async function fetchNumbers(){
+
+      try {
+        const response = await fetch("/api/getEdgesToNode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: "USER",
+            where: { name: user.name },
+            edgeLabel: "FOLLOWS",
+            edgeWhere: {},
+            adjNodeLabel: "USER",
+            adjWhere: {},
+        
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("Error fetching friends posts.");
+        }
+        const data = await response.json();
+
+        setNoOfFollowers(data.length || 0);
+
+
+
+        // Fetch following count
+        const followingResponse = await fetch("/api/getEdgesOfNodeByLabel", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: "USER",
+            where: { name: user.name },
+            edgeLabel: "FOLLOWS",
+            edgeWhere: {},
+            adjNodeLabel: "USER",
+            adjWhere: {},
+          }),
+        });
+
+        if (!followingResponse.ok) {
+          throw new Error("Error fetching following count.");
+        }
+        const followingData = await followingResponse.json();
+        console.log("followingData:", followingData);
+
+        setNoOfFollowing(followingData.length || 0);
+
+
+
+        } catch (error) {
+        console.error("Error loading followers:", error);
+      }
+
+    }
+    fetchNumbers();
+  }
+  , [user]);
   
 
 
@@ -74,11 +138,12 @@ export default function UserHeader({ user }) {
     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
       <div className="relative h-24 w-24 md:h-36 md:w-36 rounded-full overflow-hidden">
         <img
-          src={user.imageUrl || "/placeholder.svg"}
+          src={user.imageURL || "/placeholder.svg"}
           alt={user.name}
           className="object-cover"
         />
       </div>
+
 
       <div className="flex-1">
         <div className="flex flex-col md:flex-row items-center gap-4">
@@ -119,7 +184,7 @@ export default function UserHeader({ user }) {
             className="text-center cursor-pointer"
             onClick={() => router.push(`/followers`)}
           >
-            <span className="font-bold">{toNativeNumber(user.followerscount)}</span>
+            <span className="font-bold">{noOfFollowers} </span>
             <p className="text-sm text-muted-foreground">followers</p>
           </div>
 
@@ -127,7 +192,7 @@ export default function UserHeader({ user }) {
             className="text-center cursor-pointer"
             onClick={() => router.push(`/following`)}
           >
-            <span className="font-bold">{toNativeNumber(user.followingcount)}</span>
+            <span className="font-bold">{noOfFollowing} </span>
             <p className="text-sm text-muted-foreground">following</p>
           </div>
 

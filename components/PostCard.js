@@ -14,7 +14,7 @@ export default function PostCard({ post }) {
 
   const [showComments, setShowComments] = useState(false)
   const [comment, setComment] = useState("")
-  const [comments, setComments] = useState(post.comments || [])
+  const [comments, setComments] = useState( [])
   const [numberOfComments, setNumberOfComments] = useState(0);
   const [numberOfLikes, setNumberOfLikes] = useState(0);
 
@@ -74,7 +74,7 @@ export default function PostCard({ post }) {
             startNodeLabel: ["USER"],
             startNodeWhere: { name: user.name },
             endNodeLabel: ["POST"],
-            endNodeWhere: { name: post.name, postedBy: post.postedBy },
+            endNodeWhere: { name: post?.name, postedBy: post?.postedBy },
             edgeLabel: "LIKED",
             properties: {},
           }),
@@ -254,7 +254,7 @@ export default function PostCard({ post }) {
             startNodeLabel: "USER",
             startNodeWhere: { name: user.name },
             endNodeLabel: "POST",
-            endNodeWhere: { name: post.name, postedBy: post.postedBy },
+            endNodeWhere: { name: post?.name, postedBy: post?.postedBy },
             edgeLabel: "SAVED",
             properties: {},
           }),
@@ -282,7 +282,7 @@ export default function PostCard({ post }) {
             startNodeLabel: ["USER"],
             startNodeWhere: { name: user.name },
             endNodeLabel: ["POST"],
-            endNodeWhere: { name: post.name, postedBy: post.postedBy },
+            endNodeWhere: { name: post?.name, postedBy: post?.postedBy },
             edgeLabel: "SAVED",
             properties: {},
           }),
@@ -326,8 +326,8 @@ export default function PostCard({ post }) {
           className="rounded-full"
         />
         <div className="ml-3">
-          <Link href={`/friendProfile/${post.postedBy}`} className="font-medium hover:underline ">
-            {post.postedBy}
+          <Link href={`/friendProfile/${post?.postedBy}`} className="font-medium hover:underline ">
+            {post?.postedBy}
           </Link>
         </div>
         
@@ -335,7 +335,7 @@ export default function PostCard({ post }) {
 
       <div className="relative aspect-square">
         <Image
-          src={post.imageUrl || "/placeholder.svg"}
+          src={post?.imageUrl || "/placeholder.svg"}
           alt = "/placeholder.svg"
           fill
           style={{ objectFit: "cover" }}
@@ -370,15 +370,15 @@ export default function PostCard({ post }) {
 
         <div>
           <p className="mb-2">
-            <Link href={`/profile/${post.properties?.name}`} className="font-medium hover:underline">
-              {post.properties?.name}
+            <Link href={`/profile/${post?.properties?.name}`} className="font-medium hover:underline">
+              {post?.properties?.name}
             </Link>{" "}
             {}
           </p>
           <p className="text-gray-500 text-sm">{}</p>
         </div>
 
-        <span> {post.postedBy} :  {post.description} </span>
+        <span> {post?.postedBy} :  {post?.description} </span>
 
 
         <AnimatePresence>

@@ -100,23 +100,12 @@ export default function FriendHeader({ Friend, user }) {
 
   
   useEffect(() => {
-
-
-
-    // Load request state from localStorage on component mount
-    // const initialRequestState = getRequestState(Friend.id)
-    // setRequestStatus(initialRequestState)
-
-    // Here you could also add an API call to check if there's an existing FOLLOWS edge
-    // and update the state accordingly
+  
     const checkExistingRelationship = async () => {
       try {
         // Example API call to check for existing relationships
-        
 
         if(user.name==="Dummy User" || Friend==="Dummy Friend") return;
-
-
         const response = await fetch("/api/checkEdge", {
           method: "POST",
           headers: {
@@ -136,9 +125,10 @@ export default function FriendHeader({ Friend, user }) {
         console.log("Response from checkEdge:", response)
         if (response.ok) {
           const data = await response.json();
-          console.log("Data from checkEdge:", data)
+          console.log("Data from checkEdge  here 2 :", data)
         
           if (data.edgeExists) {
+            console.log("Edge exists 1")
             setRequestStatus("following")
 
           } else  {
@@ -160,11 +150,17 @@ export default function FriendHeader({ Friend, user }) {
          
             if (response.ok) {
               const data = await response.json();
-              console.log("Data from checkEdge:", data)
+              console.log("Data from checkEdge 1:", data.edgeExists)
             
               if (data.edgeExists) {
+                console.log("Edge exists 2")
                 setRequestStatus("requested")
               } 
+
+              else{
+                console.log("No edge exists")
+                setRequestStatus("none")
+              }
             }
 
           }
@@ -175,8 +171,6 @@ export default function FriendHeader({ Friend, user }) {
     }
     checkExistingRelationship();
 
-
-
     console.log("Friend in header :", Friend)
   }, [user,Friend])
 
@@ -184,7 +178,8 @@ export default function FriendHeader({ Friend, user }) {
     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
       {/* Profile Picture */}
       <div className="relative h-24 w-24 md:h-36 md:w-36 rounded-full overflow-hidden">
-        <img src={Friend.imageUrl || "/placeholder.svg"} alt={Friend.name} className="object-cover" />
+       
+        <img src={Friend.imageURL || "/placeholder.svg"} alt={Friend.name} className="object-cover" />
       </div>
 
       {/* User Info */}

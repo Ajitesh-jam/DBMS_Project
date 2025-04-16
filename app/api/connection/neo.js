@@ -53,7 +53,7 @@ export const getAllUsers = async () => {
 
 
 export const getNodeByLabel = async (label, where = {}) => {
-  console.log("getNodeByLabel where:", where);
+
   let query = `MATCH (n:${label})`;
 
   // Build the conditions string
@@ -63,12 +63,11 @@ export const getNodeByLabel = async (label, where = {}) => {
     )
     .join(" AND ");
 
-  console.log("WHERE conditions:", conditions);
+
   if (conditions) query += ` WHERE ${conditions}`;
   
   query += " RETURN n";
-  console.log("Query:", query);
-
+ 
   // Prepare the parameters for the query
   const params = Object.fromEntries(
     Object.entries(where).map(([key, value]) => [`where_${key}`, value])
@@ -79,24 +78,23 @@ export const getNodeByLabel = async (label, where = {}) => {
   return await runQuery(query, params);
 };
 
+
 export const getEdgesOfNode = async (
   label,
-  where = [],
+  where = {},
   edgeLabel,
-  edgeWhere = []
+  edgeWhere = {}
 ) => {
   let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m)`;
   let conditions = [];
 
   // Handle node conditions (n)
-  if (Array.isArray(where) && where.length > 0) {
-    const nodeConditions = where
-      .map((condition) => {
-        const [key, value] = Object.entries(condition)[0]; // Extract key-value pair
-
+  if (where && typeof where === "object" && Object.keys(where).length > 0) {
+    const nodeConditions = Object.entries(where)
+      .map(([key, value]) => {
         if (typeof value === "string") return `n.${key} = "${value}"`;
-        if (typeof value === "number") return `n.${key} = ${value}`;
-        if (typeof value === "boolean") return `n.${key} = ${value}`;
+        if (typeof value === "number" || typeof value === "boolean")
+          return `n.${key} = ${value}`;
         return "";
       })
       .filter(Boolean)
@@ -106,16 +104,12 @@ export const getEdgesOfNode = async (
   }
 
   // Handle edge conditions (e)
-  if (Array.isArray(edgeWhere) && edgeWhere.length > 0) {
-    const edgeConditions = edgeWhere
-      .map((condition) => {
-        const [key, value] = Object.entries(condition)[0];
-
-
-
+  if (edgeWhere && typeof edgeWhere === "object" && Object.keys(edgeWhere).length > 0) {
+    const edgeConditions = Object.entries(edgeWhere)
+      .map(([key, value]) => {
         if (typeof value === "string") return `e.${key} = "${value}"`;
-        if (typeof value === "number") return `e.${key} = ${value}`;
-        if (typeof value === "boolean") return `e.${key} = ${value}`;
+        if (typeof value === "number" || typeof value === "boolean")
+          return `e.${key} = ${value}`;
         return "";
       })
       .filter(Boolean)
@@ -124,90 +118,19 @@ export const getEdgesOfNode = async (
     if (edgeConditions) conditions.push(edgeConditions);
   }
 
-  // Append WHERE clause correctly
+  // Append WHERE clause
   if (conditions.length > 0) {
     query += ` WHERE ${conditions.join(" AND ")}`;
   }
-  query += " return e;";
+
+  query += " RETURN e;";
 
   console.log("Final Cypher Query:", query);
 
   return await runQuery(query);
 };
 
-// export const getAdjacentNode = async (
-//   label,
-//   where,
-//   edgeLabel,
-//   edgeWhere = {},
-//   adjNodeLabel,
-//   adjWhere = {}
-// ) => {
-//   let query = `MATCH (n:${label}) - [e:${edgeLabel}] -> (m:${adjNodeLabel})`;
-//   let conditions = [];
 
-//   // Handle node conditions (n)
-//   if (Array.isArray(where) && where.length > 0) {
-//     const nodeConditions = where
-//       .map((condition) => {
-//         const [key, value] = Object.entries(condition)[0]; // Extract key-value pair
-
-//         if (typeof value === "string") return `n.${key} = "${value}"`;
-//         if (typeof value === "number") return `n.${key} = ${value}`;
-//         if (typeof value === "boolean") return `n.${key} = ${value}`;
-//         return "";
-//       })
-//       .filter(Boolean)
-//       .join(" AND ");
-
-//     if (nodeConditions) conditions.push(nodeConditions);
-//   }
-
-//   // Handle edge conditions (e)
-//   if (Array.isArray(edgeWhere) && edgeWhere.length > 0) {
-//     const edgeConditions = edgeWhere
-//       .map((condition) => {
-//         const [key, value] = Object.entries(condition)[0];
-//         console.log("Edge Condition -> KEY:", key, "VALUE:", value);
-
-//         if (typeof value === "string") return `e.${key} = "${value}"`;
-//         if (typeof value === "number") return `e.${key} = ${value}`;
-//         if (typeof value === "boolean") return `e.${key} = ${value}`;
-//         return "";
-//       })
-//       .filter(Boolean)
-//       .join(" AND ");
-
-//     if (edgeConditions) conditions.push(edgeConditions);
-//   }
-//   // Handle adj node conditions (m)
-//   if (Array.isArray(adjWhere) && adjWhere.length > 0) {
-//     const adjConditions = adjWhere
-//       .map((condition) => {
-//         const [key, value] = Object.entries(condition)[0];
-//         console.log("Ad node Condition -> KEY:", key, "VALUE:", value);
-
-//         if (typeof value === "string") return `m.${key} = "${value}"`;
-//         if (typeof value === "number") return `m.${key} = ${value}`;
-//         if (typeof value === "boolean") return `m.${key} = ${value}`;
-//         return "";
-//       })
-//       .filter(Boolean)
-//       .join(" AND ");
-
-//     if (adjConditions) conditions.push(adjConditions);
-//   }
-
-//   // Append WHERE clause correctly
-//   if (conditions.length > 0) {
-//     query += ` WHERE ${conditions.join(" AND ")}`;
-//   }
-//   query += " return m;";
-
-//   console.log("Final Cypher Query:", query);
-
-//   return await runQuery(query);
-// };
 export const getStartAdjacentNode = async (
   label,
   where,
@@ -1004,7 +927,19 @@ export const calculatePageRank = async () => {
   }
 };
 export const incrementalPageRank = async (newNodeId = null, newEdge = null, options = {}) => {
+  const URI = process.env.URI;
+  const USER = process.env.USERNAME;
+  const PASSWORD = process.env.PASSWORD;
+
+ 
+  if (!URI || !USER || !PASSWORD) {
+  throw new Error("Missing Neo4j connection environment variables");
+  }
+
+
+  const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
   const session = driver.session();
+
   const { dampingFactor = 0.85, epsilon = 1e-4, maxIterations = 20 } = options;
 
   try {
