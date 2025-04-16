@@ -1,15 +1,12 @@
 import neo4j from "neo4j-driver";
 
-
-
-
 // Export runQuery helper
 export async function runQuery(query, params = {}) {
     const URI = process.env.URI;
     const USER = process.env.USERNAME;
     const PASSWORD = process.env.PASSWORD;
 
-    console.log("Neo4j config:", { URI, USER });
+   
     if (!URI || !USER || !PASSWORD) {
     throw new Error("Missing Neo4j connection environment variables");
     }
@@ -38,8 +35,19 @@ export const getWholeGraph = async () => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching graph" });
-  } finally {
-    session.close();
+  }
+};
+
+export const getAllUsers = async () => {
+  //const session = driver.session();
+  try {
+     return await runQuery(`MATCH (n:USER) RETURN n`);
+    //res.json(graph);
+    //res.json(result);
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching graph" });
   }
 };
 

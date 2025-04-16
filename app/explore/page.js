@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
+import Image from "next/image";
 
 import { Input } from "@/components/ui/input";
 export default function Explore() {
@@ -15,78 +16,23 @@ export default function Explore() {
       setLoading(true);
 
       try {
-        // Fetch all users using getNodeByLabel API
-        const response = await fetch("/api/getNodeByLabel", {
+        
+        const allUsers = await fetch("/api/getAllUsers", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            label: ["USER"],
-          }),
+          
         });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!allUsers.ok) {
+          throw new Error(`HTTP error! Status: ${allUsers.status}`);
         }
-
-        const data = await response.json();
-
-        if (data.length === 0) {
-          alert("No User Found");
-          return;
-        }
-
-        console.log("Fetched user data:", data);
-
-        const allUsers = await Promise.all(
-          data.map(async (user) => {
-            const name = user.n.properties.name;
-            const pagerank = user.n.properties.pagerank;
-            // Fetch latest post for this user using api/getAdjNodeByLabel
-            const postResponse = await fetch("/api/getAdjNodeByLabel", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                label: ["USER"],
-                adjNodeLabel: ["POST"],
-                where: {
-                  name: name,
-                },
-              }),
-            });
-
-            if (!postResponse.ok) {
-              throw new Error(`HTTP error! Status: ${postResponse.status}`);
-            }
-            console.log("Post response:", postResponse);
-            const postData = await postResponse.json();
-            if (postData.length === 0) {  
-              console.log("No posts found for user:", name);
-            }
-            console.log("Fetched post data:", postData);
-            
+        const allUsersData = await allUsers.json();
+        console.log("All users data:", allUsersData);
+        
 
 
-            const post = ""; // Replace with actual post data if needed
-            return {
-              name,
-              pagerank,
-              post,
-            };
-          })
-        );
-
-        const validUsers = await allUsers.filter((user) => user !== null);
-
-        // Sort with respect to pagerank
-        validUsers.sort((a, b) => b.pagerank - a.pagerank);
-        const sampledUsers = validUsers; // Sample top 10 users
-
-        console.log("Sampled user data:", sampledUsers);
-        setUsers(sampledUsers);
+         setUsers(allUsersData);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -109,14 +55,14 @@ export default function Explore() {
       >
         <h1 className="text-3xl font-bold mb-6">Explore Top Users</h1>
         <div className="relative">
-          <Input
+          {/* <Input
             type="text"
             placeholder="Search by user name..."
             className="w-full p-3 pl-12 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" /> */}
         </div>
       </motion.div>
 
@@ -132,6 +78,16 @@ export default function Explore() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
+              {user.imageURL && (
+                <Image
+                  src={user.imageURL}
+                  alt={`Image of ${user.name}`}
+                  width={100}
+                  height={100}
+                  className="rounded-full mb-4"
+                />
+              )}
+             
               <h2 className="text-black">NAME: {user.name}</h2>
               <p className="text-gray-500">PageRank: {user.pagerank}</p>
               <p className="text-gray-700">Post: {user.post}</p>
