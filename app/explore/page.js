@@ -6,48 +6,98 @@ import { Search } from "lucide-react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 export default function Explore() {
-  const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Simulate fetching data
-    const fetchPosts = async () => {
+    const fetchAndSampleUsers = async () => {
       setLoading(true);
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Generate 20 random posts
-      const generatedPosts = Array.from({ length: 20 }, (_, i) => {
-        const randomWidth = Math.floor(Math.random() * (500 - 300 + 1)) + 300; // Random width between 300 and 500
-        const randomHeight = Math.floor(Math.random() * (500 - 300 + 1)) + 300; // Random height between 300 and 500
-        return {
-          id: i + 1,
-          image: {
-            src: `/placeholder.svg`,
-            width: randomWidth,
-            height: randomHeight,
+      try {
+        // Fetch all users using getNodeByLabel API
+        const response = await fetch("/api/getNodeByLabel", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          likes: Math.floor(Math.random() * 1000),
-          comments: Math.floor(Math.random() * 50),
-          tags: ["nature", "travel", "photography", "food", "fashion", "art"]
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3),
-        };
-      });
+          body: JSON.stringify({
+            label: ["USER"],
+          }),
+        });
 
-      setPosts(generatedPosts);
-      setLoading(false);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.length === 0) {
+          alert("No User Found");
+          return;
+        }
+
+        console.log("Fetched user data:", data);
+
+        const allUsers = await Promise.all(
+          data.map(async (user) => {
+            const name = user.n.properties.name;
+            const pagerank = user.n.properties.pagerank;
+            // Fetch latest post for this user using api/getAdjNodeByLabel
+            const postResponse = await fetch("/api/getAdjNodeByLabel", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                label: ["USER"],
+                adjNodeLabel: ["POST"],
+                where: {
+                  name: name,
+                },
+              }),
+            });
+
+            if (!postResponse.ok) {
+              throw new Error(`HTTP error! Status: ${postResponse.status}`);
+            }
+            console.log("Post response:", postResponse);
+            const postData = await postResponse.json();
+            if (postData.length === 0) {  
+              console.log("No posts found for user:", name);
+            }
+            console.log("Fetched post data:", postData);
+            
+
+
+            const post = ""; // Replace with actual post data if needed
+            return {
+              name,
+              pagerank,
+              post,
+            };
+          })
+        );
+
+        const validUsers = await allUsers.filter((user) => user !== null);
+
+        // Sort with respect to pagerank
+        validUsers.sort((a, b) => b.pagerank - a.pagerank);
+        const sampledUsers = validUsers; // Sample top 10 users
+
+        console.log("Sampled user data:", sampledUsers);
+        setUsers(sampledUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchPosts();
+    fetchAndSampleUsers();
   }, []);
 
-  const filteredPosts = posts.filter((post) =>
-    post.tags.some((tag) =>
-      tag.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredUsers = users;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -57,77 +107,34 @@ export default function Explore() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold mb-6">Explore</h1>
+        <h1 className="text-3xl font-bold mb-6">Explore Top Users</h1>
         <div className="relative">
-          {/* <input
-            type="text"
-            placeholder="Search by tags..."
-            className="w-full p-3 pl-12 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          /> */}
           <Input
             type="text"
-            placeholder="Search by tags..."
+            placeholder="Search by user name..."
             className="w-full p-3 pl-12 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            ></Input>
-
+          />
           <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
         </div>
       </motion.div>
 
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 12 }).map((_, index) => (
+        <p>Loading...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredUsers.map((user, index) => (
             <motion.div
               key={index}
-              className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredPosts.map((post) => (
-            <motion.div
-              key={post.id}
-              className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-                src={post.image.src || "/placeholder.svg"}
-                width={post.image.width}
-                height={post.image.height}
-              whileHover={{ scale: 1.03 }}
+              className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 flex flex-col items-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Image
-                src={post.image || "/placeholder.svg"}
-                alt={`Post ${post.id}`}
-                className="w-full h-full object-cover"
-              />
-              <motion.div
-                className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-              >
-                <div className="flex items-center text-white mb-2">
-                  <span className="mr-4">❤️ {post.likes}</span>
-                  <span>💬 {post.comments}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs bg-white bg-opacity-20 text-white px-2 py-1 rounded"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
+              <h2 className="text-black">NAME: {user.name}</h2>
+              <p className="text-gray-500">PageRank: {user.pagerank}</p>
+              <p className="text-gray-700">Post: {user.post}</p>
             </motion.div>
           ))}
         </div>

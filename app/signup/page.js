@@ -173,13 +173,14 @@ export default function SignupPage() {
         imageUrl: formData.imageUrl,
         dob: formData.dob,
         bio: formData.bio,
-
-        //friendRequests: 0,  -> make edge instead
-        //likedPosts: 0,  -> make edge instead
+        followerscount: 0,
+        followingcount:0,
+        posts: 0,
+        pagerank:0
       };
 
       // Simulate API call
-      console.log("Sending data to API:", userData);
+      console.log("Sending data to API:", JSON.stringify(userData, null, 2));
 
       fetch("/api/createNode", {
         method: "POST",
@@ -197,25 +198,23 @@ export default function SignupPage() {
           }
           return response.json(); // Parse JSON correctly
         })
-        .then((data) => console.log(data))
+        .then((data) => {
+          setUser(data);
+          router.push("/profile");
+        })
         .catch((error) => console.error("Error:", error));
 
       // Simulate successful response
 
-      setTimeout(() => {
-        setIsSuccess(true);
-        setTimeout(() => {
-          //setUser(userData);
-          setUser({
-            ...userData,
-            followers: 1,
-            following: 0,
-            posts: 0,
-          });
+      // setTimeout(() => {
+      //   setIsSuccess(true);
+      //   setTimeout(() => {
+      //     //setUser(userData);
+      //     setUser(userData);
 
-          router.push("/profile");
-        }, 2000);
-      }, 1500);
+      //     router.push("/profile");
+      //   }, 2000);
+      // }, 1500);
     } catch (error) {
       console.error("Error during signup:", error);
     } finally {

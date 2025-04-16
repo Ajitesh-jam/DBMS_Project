@@ -154,7 +154,7 @@ export default function SearchPage() {
           <Input
             type="search"
             placeholder="Search for users..."
-            className="pl-10 pr-4 py-6 text-lg w-full"
+            className="pl-10 pr-4 py-6 text-gray-700 w-full "
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -170,7 +170,7 @@ export default function SearchPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="absolute right-2 top-1/2 -translate-y-1/2"
+            className="relative right-2 top-1/2 -translate-y-1/2 bg-gray-700 m-5"
             onClick={() => setSearchTerm("")}
           >
             Clear

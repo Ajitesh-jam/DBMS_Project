@@ -10,9 +10,9 @@ const initialState = {
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzgh0Pd-fCG2LnUPP92d1DP7y2cdnugqFXyw&s",
     email: "default@gmail.com",
     phone: "0000000000",
-    followers: 0,
+    followerscount: 0,
     posts: 0,
-    following: 0,
+    followingcount: 0
   },
   lastUpdated: Date.now(), // Track last activity time
 };

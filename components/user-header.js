@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-
+import { toNativeNumber } from "../app/api/connection/neo";
 
 export default function UserHeader({ user }) {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing);
@@ -57,14 +57,14 @@ export default function UserHeader({ user }) {
 
         <div className="flex justify-center md:justify-start gap-6 mt-6">
           <div className="text-center">
-            <span className="font-bold">{user.posts}</span>
+            <span className="font-bold">{toNativeNumber(user.posts)}</span>
             <p className="text-sm text-muted-foreground">posts</p>
           </div>
           <div
             className="text-center cursor-pointer"
             onClick={() => router.push(`/followers`)}
           >
-            <span className="font-bold">{user.followers}</span>
+            <span className="font-bold">{toNativeNumber(user.followerscount)}</span>
             <p className="text-sm text-muted-foreground">followers</p>
           </div>
 
@@ -72,7 +72,7 @@ export default function UserHeader({ user }) {
             className="text-center cursor-pointer"
             onClick={() => router.push(`/following`)}
           >
-            <span className="font-bold">{user.following}</span>
+            <span className="font-bold">{toNativeNumber(user.followingcount)}</span>
             <p className="text-sm text-muted-foreground">following</p>
           </div>
 
