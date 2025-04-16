@@ -89,13 +89,9 @@ export default function FriendProfilePage({ params }) {
 
         const result = await response.json();
         console.log("result for response", result);
-        // console.log("result.properties:",result.properties);
-        // console.log("result.exists:",result.exists);
+        
         if (result.length) {
-          console.log("Result is perfect!!");
-
-
-         
+          console.log("Result is perfect!!");         
           setFollowRequestProps(result.properties);
         }
       } catch (error) {

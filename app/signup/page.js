@@ -26,6 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import FloatingIcons from "@/components/floating-icons";
+import Image from 'next/image'
 
 import useUsers from "@/hooks/user.zustand";
 
@@ -158,8 +159,7 @@ export default function SignupPage() {
         imageURL: formData.imageURL,
         dob: formData.dob,
         bio: formData.bio,
-        followerscount: 0,
-        followingcount:0,
+     
         posts: 0,
         pagerank:0
       };
@@ -191,21 +191,32 @@ export default function SignupPage() {
 
       // Simulate successful response
 
-      // setTimeout(() => {
-      //   setIsSuccess(true);
-      //   setTimeout(() => {
-      //     //setUser(userData);
-      //     setUser(userData);
+      setTimeout(() => {
+        setIsSuccess(true);
+        setTimeout(() => {
+          //setUser(userData);
+          setUser(userData);
 
-      //     router.push("/profile");
-      //   }, 2000);
-      // }, 1500);
+          router.push("/profile");
+        }, 2000);
+      }, 1500);
     } catch (error) {
       console.error("Error during signup:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const isValidURL = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (err) {
+      console.error("Invalid URL:", err);
+      return false;
+    }
+  };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center ">
@@ -385,7 +396,7 @@ export default function SignupPage() {
                 <div className="space-y-2">
                   <Label htmlFor="bio" className="flex items-center gap-2">
                     <div size={16} />
-                    bio Number
+                    Bio 
                   </Label>
                   <div className="relative">
                     <Input
@@ -420,7 +431,7 @@ export default function SignupPage() {
                 <div className="space-y-2">
                   <Label htmlFor="date" className="flex items-center gap-2">
                     <div size={16} />
-                    date Number
+                    Date of Birth
                   </Label>
                   <div className="relative">
                     <Input
@@ -509,15 +520,24 @@ export default function SignupPage() {
                         errors.imageURL ? "border-destructive" : ""
                       }`}
                     />
-                    {formData.imageURL && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-green-500 text-sm mt-1 flex items-center gap-1"
-                      >
-                        <Check size={14} /> Image got successfully
-                      </motion.div>
-                    )}
+                    {formData.imageURL && isValidURL(formData.imageURL) && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-green-500 text-sm mt-1 flex items-center gap-1"
+                        >
+                          <Image
+                            src={formData.imageURL}
+                            alt="Uploaded Image"
+                            width={1000}
+                            height={5000}
+                            className="rounded-full"
+                            unoptimized // Optional, if it's not from a trusted domain
+                          />
+                          {/* <Check size={14} /> Image got successfully */}
+                        </motion.div>
+                      )}
+
                     {errors.imageURL && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}

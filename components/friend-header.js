@@ -10,6 +10,7 @@ export default function FriendHeader({ Friend, user }) {
   const [isLoading, setIsLoading] = useState(false)
   // const user = useUsers((state) => state.selectedUser);
   // const Friend = useFriends((state) => state.selectedFriend);
+  const [numberOfPosts, setNumberOfPosts] = useState(0);
 
   
   const createFollowRequest = async () => {
@@ -165,6 +166,31 @@ export default function FriendHeader({ Friend, user }) {
 
           }
         }
+
+
+
+        //fetch number of posts for the user
+        const response2 = await fetch("/api/getAdjNodeByLabel", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: ["USER"],
+            where: { name: Friend.name },
+            edgeLabel: "POSTED_BY",
+            edgeWhere: {},
+            adjNodeLabel: "POST",
+            adjWhere: {},
+          }),
+        });
+        if (!response2.ok) {
+          throw new Error(`HTTP error! Status: ${response2.status}`);
+        }
+        const fetchedPosts = await response2.json();
+        console.log("Fetched posts for friend:", fetchedPosts)
+        setNumberOfPosts(fetchedPosts.length);
+        
       } catch (err) {
         console.error("Error checking relationship:", err)
       }
@@ -223,7 +249,7 @@ export default function FriendHeader({ Friend, user }) {
         {/* Stats Section */}
         <div className="flex justify-center md:justify-start gap-6 mt-6">
           <div className="text-center">
-            <span className="font-bold">{Friend.posts}</span>
+            <span className="font-bold">{numberOfPosts} </span>
             <p className="text-sm text-muted-foreground">posts</p>
           </div>
           

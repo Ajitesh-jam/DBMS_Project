@@ -30,12 +30,12 @@ export default function PostGrid({ active, posts }) {
         posts
         .filter((post) => {
           const visibility = post.m?.properties?.visibility;
-          const isFriend = post.isFriendPost;
+          
     
           // Show:
           // - Own posts (not friend posts) => always show
           // - Friend posts => only show if visibility !== 0
-          return !isFriend || (isFriend && visibility !== 0);
+          return visibility !== 0;
         })
         .map((post, index) => (
           <motion.div
@@ -50,7 +50,7 @@ export default function PostGrid({ active, posts }) {
 
             <img
               src={post.m?.properties?.imageURL || "/placeholder.svg"}
-              alt={`Post ${post.id}`}
+              alt={`Post ${post.m?.properties?.name }`}
               className="object-cover w-full h-full"
             />
 
@@ -63,7 +63,7 @@ export default function PostGrid({ active, posts }) {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Heart className="h-5 w-5 fill-white text-white" />
-                <span>{post.likes}</span>
+                {/* <span>{post.likes}</span> */}
               </motion.div>
               <motion.div
                 className="flex items-center gap-1"
@@ -72,7 +72,7 @@ export default function PostGrid({ active, posts }) {
                 transition={{ type: "spring", stiffness: 400, damping: 10, delay: 0.1 }}
               >
                 <MessageCircle className="h-5 w-5" />
-                <span>{post.comments}</span>
+                {/* <span>{post.comments}</span> */}
               </motion.div>
             </div>
             
